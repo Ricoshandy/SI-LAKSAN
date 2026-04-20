@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Periode;
 use Illuminate\Http\Request;
+use App\Models\Pengajuan;
 
 class PeriodeController extends Controller
 {
@@ -45,6 +46,16 @@ class PeriodeController extends Controller
             ->with('success', 'Berhasil Menambahkan Periode');
     }
 
+
+public function viewPengajuan($id)
+{
+    $pengajuans = Pengajuan::with('user')
+        ->where('periode_id', $id)
+        ->get();
+
+    return view('Kepegawaian.ViewPeriodePengajuan', compact('pengajuans'));
+}
+
     public function edit(Request $request, $id)
     {
         $request->validate([
@@ -80,16 +91,24 @@ class PeriodeController extends Controller
             ->with('success', 'Berhasil Mengupdate Periode');
     }
 
-    public function delete($id){
-        $periode = Periode::findOrFail($id);
-        try {
-            $periode->delete();
-            return redirect()->route('kepegawaian.periode.list')
-                ->with('success', 'Periode berhasil dihapus.');
-        } catch (\Throwable $th) {
-            return redirect()->route('kepegawaian.periode.list')
-                ->withErrors(['delete_error' => 'Gagal menghapus periode: ' . $th->getMessage()])
-                ->withInput();
-        }
+  public function delete($id)
+{
+    $periode = Periode::findOrFail($id);
+
+    // Cek apakah periode masih digunakan oleh pengajuan
+    if ($periode->pengajuans()->count() > 0) {
+        return redirect()->route('kepegawaian.periode.list')
+            ->withErrors([
+                'delete_error' => 
+                'Periode tidak dapat dihapus karena masih digunakan dalam pengajuan kenaikan jabatan.'
+            ]);
     }
+
+    $periode->delete();
+
+    return redirect()->route('kepegawaian.periode.list')
+        ->with('success', 'Periode berhasil dihapus.');
 }
+
+    }
+

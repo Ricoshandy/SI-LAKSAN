@@ -16,6 +16,7 @@ Route::middleware(['auth', 'kepegawaian'])->prefix('kepegawaian')->group(functio
     Route::controller(PengajuanController::class)->group(function(){
         Route::get('pengajuan/list', 'kepegawaian_pengajuan_list')->name('kepegawaian.pengajuan.list');
         Route::get('pengajuan/review/{id}', 'pengajuan_review')->name('pengajuan.review');
+        Route::get('pengajuan/file/{id}/{key}', 'serveFile')->name('kepegawaian.pengajuan.file'); // ← TAMBAHIN INI
         Route::get('pengajuan/sister/{id}', 'pengajuan_sister')->name('pengajuan.sister');
         Route::get('pengajuan/download/{id_pengajuan}', 'download_pengajuan')->name('download.pengajuan');
 
@@ -26,6 +27,12 @@ Route::middleware(['auth', 'kepegawaian'])->prefix('kepegawaian')->group(functio
     Route::controller(ReviewPengajuanController::class)->group(function(){
         Route::post('pengajuan/review/{pengajuanId}/action', 'action_review')->name('action.review');
     });
+
+    Route::get(
+    '/kepegawaian/periode/{id}/pengajuan',
+    [PeriodeController::class, 'viewPengajuan']
+    )->name('kepegawaian.periode.view');
+
 
     Route::controller(PeriodeController::class)->group(function(){
         Route::get('periode/list', 'kepegawaian_periode_list')->name('kepegawaian.periode.list');

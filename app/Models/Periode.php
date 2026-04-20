@@ -19,4 +19,8 @@ class Periode extends Model
     public function getPengajuans(): HasMany {
         return $this->hasMany(Pengajuan::class, 'periode_id', 'id');
     }
+     public function pengajuans()
+    {
+        return $this->hasMany(Pengajuan::class);
+    }
 }

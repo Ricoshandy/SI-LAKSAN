@@ -1,6 +1,8 @@
 <?php
 
 namespace App\Models;
+use App\Models\User;
+use App\Models\Periode;
 
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Model;
@@ -85,7 +87,26 @@ class Pengajuan extends Model
             ->latest('created_at');
     }
 
+    
+
+
+
+    // RELASI KE DOSEN
+    public function user()
+    {
+        return $this->belongsTo(User::class);
+    }
+
+    // RELASI KE PERIODE
+    public function periode()
+    {
+        return $this->belongsTo(Periode::class);
+    }
+
+
+
     public function getSk(): HasOne {
         return $this->hasOne(SkJabatan::class, 'pengajuan_id', 'id');
     }
+
 }

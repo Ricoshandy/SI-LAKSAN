@@ -1,83 +1,495 @@
 @extends('Kepegawaian.Components.sidebar')
 @section('main-content')
 
+<style>
+    /* General Styles */
+    .header {
+        margin-top:  -200px;
+        margin-bottom: 50px;
+    }
 
-        <div class="header">
-            <h1>List Usul Kenaikan Jabatan</h1>
+    .header-left{
+        font-size: 18px;
+        font-weight: 700;
+       
+    }
+
+    .header-left p {
+        color: #666;
+    }
+
+    /* --- SEARCH BOX - DI ATAS TABLE --- */
+    .search-wrapper {
+        display: flex;
+        justify-content: flex-end;
+        align-items: center;
+        margin-bottom: 16px;
+        gap: 12px;
+    }
+
+    .search-container {
+        position: relative;
+        width: 280px;
+    }
+
+    .search-box {
+        width: 100%;
+        padding: 10px 16px 10px 40px;
+        background: rgba(255, 255, 255, 0.9);
+        border: 1.5px solid #e0e0e0;
+        border-radius: 25px;
+        font-size: 14px;
+        color: #333;
+        transition: all 0.3s ease;
+    }
+
+    .search-box::placeholder {
+        color: #999;
+    }
+
+    .search-box:focus {
+        outline: none;
+        background: white;
+        border-color: #3b7ee1;
+        box-shadow: 0 4px 12px rgba(59, 126, 225, 0.15);
+    }
+
+    .search-icon {
+        position: absolute;
+        left: 14px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 18px;
+        height: 18px;
+        color: #999;
+        pointer-events: none;
+        transition: color 0.3s;
+    }
+
+    .search-box:focus + .search-icon {
+        color: #3b7ee1;
+    }
+    /* --- END SEARCH BOX --- */
+
+    .content-wrapper {
+        padding: 0 24px;
+    }
+
+    /* Table Container */
+    .table-container {
+        background: rgba(255, 255, 255, 0.138);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+        border-radius: 16px;
+        overflow: hidden;
+        backdrop-filter: blur(6px);
+    }
+
+    .table-scroll {
+        overflow-x: auto;
+    }
+
+    .data-table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 900px;
+    }
+
+    /* Table Header */
+    .data-table thead tr {
+        background: linear-gradient(to right, #3b7ee1, #80deea);
+        color: hsl(0, 0%, 0%);
+        height: 56px;
+    }
+
+    .data-table th {
+        padding: 14px 12px;
+        text-align: left;
+        vertical-align: middle;
+    }
+
+    .data-table th:not(:first-child) {
+        text-align: center;
+    }
+
+    .data-table tbody tr { 
+        transition: all 0.2s ease; 
+    }
+    .data-table tbody tr:nth-child(odd) { 
+        background-color: #ffffffc3; 
+    }
+    .data-table tbody tr:nth-child(even) { 
+        background-color: #ffffffc3; 
+    }
+    .data-table tbody tr:hover { 
+        background-color: #ffffffc3; 
+    }
+    .data-table tbody tr.hidden { 
+        display: none; 
+    }
+    .data-table td { 
+        padding: 10px 12px; 
+    }
+    .data-table .text-center { 
+        text-align: center; 
+    }
+    
+    .no-results { 
+        display: none; 
+        text-align: center; 
+        padding: 60px 20px; 
+        background: rgba(255, 255, 255, 0.9); 
+    }
+    .no-results.show { 
+        display: block; 
+    }
+    
+    .badge { 
+        border-radius: 10px; 
+        padding: 6px 10px; 
+        font-weight: 600; 
+        color: white; 
+        display: inline-block; 
+        font-size: 13px; 
+    }
+    
+    .badge-rumpun-agama { 
+        background-color: #ffebcc; 
+        color: #d35400; 
+    }
+    .badge-rumpun-umum { 
+        background-color: #e7f1ff; 
+        color: #007bff; 
+    }
+    .badge-usul { 
+        font-style: italic; 
+    }
+    .badge-usul-asisten_ahli { 
+        background-color: #6f42c1; 
+    }
+    .badge-usul-lektor { 
+        background-color: #007bff; 
+    }
+    .badge-usul-lektor_kepala { 
+        background-color: #17a2b8; 
+    }
+    .badge-usul-guru_besar { 
+        background-color: #dc3545; 
+    }
+    
+    .badge-status { 
+        border-radius: 8px; 
+    }
+    .badge-status-draft { 
+        background-color: #6c757d; 
+    }
+    .badge-status-baru { 
+        background-color: #007bff; 
+    }
+    .badge-status-dalam_proses { 
+        background-color: #17a2b8; 
+    }
+    .badge-status-disetujui { 
+        background-color: #28a746c9; 
+    }
+    .badge-status-ditolak { 
+        background-color: #dc3546d6; 
+    }
+    .badge-status-revisi { 
+        background-color: #d9ab20d3; 
+    }
+    
+    .action-buttons { 
+        display: inline-flex; 
+        gap: 6px; 
+        flex-wrap: wrap; 
+        justify-content: center; 
+    }
+    
+    .action-btn { 
+        color: white; 
+        padding: 8px; 
+        border-radius: 8px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        transition: opacity 0.2s; 
+        text-decoration: none; 
+    }
+    .action-btn:hover { 
+        opacity: 0.8; 
+    }
+    .action-btn svg { 
+        width: 20px; 
+        height: 20px; 
+    }
+    .btn-view { 
+        background-color: #28a745; 
+    }
+    .btn-upload { 
+        background-color: #007bff; 
+    }
+    
+    .card-view { 
+        display: none; 
+    }
+    .card-item { 
+        background: #ffffffc3; 
+        border-radius: 12px; 
+        padding: 16px; 
+        margin-bottom: 16px; 
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08); 
+    }
+    .card-item.hidden { 
+        display: none; 
+    }
+    
+    .card-header { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        margin-bottom: 12px; 
+        padding-bottom: 12px; 
+        border-bottom: 2px solid #e5e7eb; 
+    }
+    
+    .card-dosen { 
+        font-weight: 700; 
+        font-size: 16px; 
+        color: #1f2937; 
+    }
+    
+    .card-row { 
+        display: flex; 
+        justify-content: space-between; 
+        align-items: center; 
+        padding: 8px 0; 
+        border-bottom: 1px solid #f3f4f6; 
+    }
+    .card-row:last-child { 
+        border-bottom: none; 
+    }
+    
+    .card-label { 
+        font-weight: 600; 
+        color: #6b7280; 
+        font-size: 13px; 
+    }
+    
+    .card-actions { 
+        margin-top: 16px; 
+        padding-top: 12px; 
+        border-top: 2px solid #e5e7eb; 
+    }
+
+    /* Responsive untuk Mobile */
+    @media (max-width: 768px) {
+        .search-wrapper {
+            justify-content: stretch;
+        }
+        
+        .search-container {
+            width: 100%;
+        }
+        
+        .table-container {
+            background: transparent;
+            box-shadow: none;
+        }
+        
+        .header-left h1 { 
+            font-size: 24px; 
+        }
+        .header-left p { 
+            font-size: 14px; 
+        }
+        .content-wrapper { 
+            padding: 0 12px; 
+        }
+        .table-scroll { 
+            display: none; 
+        }
+        .card-view { 
+            display: block; 
+            padding: 0; 
+        }
+        .action-buttons { 
+            gap: 8px; 
+        }
+        .action-btn { 
+            padding: 10px; 
+        }
+    }
+</style>
+
+<div class="header">
+    <div class="header-left">
+        <h1>List Usul Kenaikan Jabatan</h1>
+        <p style="font-size: 14px;">Berikut daftar seluruh pengajuan kenaikan jabatan yang perlu ditinjau</p>
+    </div>
+</div>
+
+<div class="content-wrapper">
+    <!-- SEARCH BOX DI ATAS TABLE -->
+    <div class="search-wrapper">
+        <div class="search-container">
+            <svg class="search-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="2" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
+            </svg>
+            <input type="text" id="searchInput" class="search-box" placeholder="Cari data...">
         </div>
-        <div style="padding: 0 28px; ">
+    </div>
 
-            <div style="color: #333; background-color: white; border-radius: 8px; padding: 10px 10px; width:100%;">
-                <table style="width:100%; border-collapse: collapse; border-top-left-radius: 10px; border-top-right-radius: 10px; overflow: hidden;">
-                    <thead>
-                        <tr style="background-color:rgb(160, 255, 255);">
-                            <th align="left" style="padding: 12px 6px">No</th>
-                            <th>Dosen</th>
-                            <th>Rumpun</th>
-                            <th>Usul</th>
-                            <th>Status</th>
-                            <th>Tahap</th>
-                            <th>Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @foreach ($pengajuans as $i => $pengajuan)    
-                        <tr style="background-color: {{ $i % 2 == 0 ? '#ffffff' : '#dddddd' }};">
-                                <td align="left" style="padding: 6px 6px">{{ $i+1 }}</td>
-                                <td align="center">{{ $pengajuan->getUser->name }}</td>
-                                <td align="center">
-                                    <div style="border-radius: 10px; font-weight: bold; padding: 4px 0; 
-                                        background-color: {{ $pengajuan->getFormPengajuan->rumpun == 'AGAMA' ? '#ffebcc' : '#e7f1ff' }}; 
-                                        color: {{ $pengajuan->getFormPengajuan->rumpun == 'AGAMA' ? '#d35400' : '#007bff' }};">
-                                        {{ $pengajuan->getFormPengajuan->rumpun }}
-                                    </div>
-                                </td>
+    <!-- TABLE CONTAINER -->
+    <div class="table-container">
+        <div class="table-scroll">
+            <table class="data-table">
+                <thead>
+                    <tr>
+                        <th>No</th>
+                        <th>Dosen</th>
+                        <th>Rumpun</th>
+                        <th>Usul</th>
+                        <th>Status</th>
+                        <th>Tahap</th>
+                        <th>Aksi</th>
+                    </tr>
+                </thead>
 
-                                <td align="center">
-                                    <div style="border-radius: 10px; font-style: italic; padding: 4px 0; color: white; 
-                                        background-color: 
-                                            {{ $pengajuan->getFormPengajuan->usul == 'ASISTEN_AHLI' ? '#6f42c1' : 
-                                            ($pengajuan->getFormPengajuan->usul == 'LEKTOR' ? '#007bff' : 
-                                            ($pengajuan->getFormPengajuan->usul == 'LEKTOR_KEPALA' ? '#17a2b8' : 
-                                            ($pengajuan->getFormPengajuan->usul == 'GURU_BESAR' ? '#dc3545' : '#f8f9fa'))) }};">
-                                        {{ $pengajuan->getFormPengajuan->usul }}
-                                    </div>
-                                </td>
-
-                                <td align="center">
-                                    <div style="padding: 4px 0; font-weight: bold; color: white; border-radius: 5px; 
-                                        background-color: 
-                                            {{ $pengajuan->status == 'DRAFT' ? '#6c757d' : 
-                                            ($pengajuan->status == 'BARU' ? '#007bff' : 
-                                            ($pengajuan->status == 'DALAM_PROSES' ? '#17a2b8' : 
-                                            ($pengajuan->status == 'DISETUJUI' ? '#28a745' : 
-                                            ($pengajuan->status == 'DITOLAK' ? '#dc3545' : 
-                                            ($pengajuan->status == 'REVISI' ? '#ffc107' : '#6c757d'))))) }};">
-                                        {{ $pengajuan->status }}
-                                    </div>
-                                </td>
-                                <td align="center">{{ $pengajuan->tahap }}</td>
-                                <td align="center" style="padding: 6px 0;">
-                                    @if ($pengajuan->tahap == 'VERIFIKASI_BERKAS')
-                                        <a class="icon-button" style="--btn-bg: green;" href="{{ route('pengajuan.review', ['id' => $pengajuan->id]) }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
+                <tbody id="tableBody">
+                    @foreach ($pengajuans as $i => $pengajuan)
+                    <tr class="data-row">
+                        <td>{{ $i + 1 }}</td>
+                        <td class="text-center dosen-name">{{ $pengajuan->getUser->name }}</td>
+                        <td class="text-center rumpun-data">
+                            <span class="badge {{ $pengajuan->getFormPengajuan->rumpun == 'AGAMA' ? 'badge-rumpun-agama' : 'badge-rumpun-umum' }}">
+                                {{ $pengajuan->getFormPengajuan->rumpun }}
+                            </span>
+                        </td>
+                        <td class="text-center usul-data">
+                            <span class="badge badge-usul badge-usul-{{ strtolower($pengajuan->getFormPengajuan->usul) }}">
+                                {{ $pengajuan->getFormPengajuan->usul }}
+                            </span>
+                        </td>
+                        <td class="text-center status-data">
+                            <span class="badge badge-status badge-status-{{ strtolower($pengajuan->status) }}">
+                                {{ $pengajuan->status }}
+                            </span>
+                        </td>
+                        <td class="text-center tahap-data">{{ $pengajuan->tahap }}</td>
+                        <td class="text-center">
+                            <div class="action-buttons">
+                                @if ($pengajuan->tahap == 'VERIFIKASI_BERKAS')
+                                    <a href="{{ route('pengajuan.review', ['id' => $pengajuan->id]) }}" title="Review Berkas" class="action-btn btn-view">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                                             <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m0-3-3-3m0 0-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75" />
-                                            </svg>
-                                        </a>
-                                    @elseif ($pengajuan->tahap == 'PENGAJUAN_SISTER')
-                                        <a class="icon-button" style="--btn-bg: skyblue;" href="{{ route('pengajuan.sister', ['id' => $pengajuan->id]) }}">
-                                            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                                                <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                                            </svg>
-                                        </a>
-                                    @endif
-                                </td>
-                            </tr>
-                        @endforeach
-                    </tbody>
-                </table>
+                                        </svg>
+                                    </a>
+                                @elseif ($pengajuan->tahap == 'PENGAJUAN_SISTER')
+                                    <a href="{{ route('pengajuan.sister', ['id' => $pengajuan->id]) }}" title="Pengajuan Sister" class="action-btn btn-upload">
+                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                        </svg>
+                                    </a>
+                                @endif
+                            </div>
+                        </td>
+                    </tr>
+                    @endforeach
+                </tbody>
+            </table>
+
+            <div class="no-results" id="noResults">
+                <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
+                <div>Tidak ada data yang cocok dengan pencarian Anda</div>
             </div>
-            
         </div>
+
+        <div class="card-view" id="cardView">
+            @foreach ($pengajuans as $i => $pengajuan)
+            <div class="card-item card-data" data-name="{{ strtolower($pengajuan->getUser->name) }}" data-rumpun="{{ strtolower($pengajuan->getFormPengajuan->rumpun) }}" data-status="{{ strtolower($pengajuan->status) }}" data-usul="{{ strtolower($pengajuan->getFormPengajuan->usul) }}" data-tahap="{{ strtolower($pengajuan->tahap) }}">
+                <div class="card-header">
+                    <span class="card-dosen">{{ $pengajuan->getUser->name }}</span>
+                    <span class="badge badge-status badge-status-{{ strtolower($pengajuan->status) }}">
+                        {{ $pengajuan->status }}
+                    </span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Rumpun</span>
+                    <span class="badge {{ $pengajuan->getFormPengajuan->rumpun == 'AGAMA' ? 'badge-rumpun-agama' : 'badge-rumpun-umum' }}">{{ $pengajuan->getFormPengajuan->rumpun }}</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Usul</span>
+                    <span class="badge badge-usul badge-usul-{{ strtolower($pengajuan->getFormPengajuan->usul) }}">{{ $pengajuan->getFormPengajuan->usul }}</span>
+                </div>
+                <div class="card-row">
+                    <span class="card-label">Tahap</span>
+                    <span style="font-weight: 600; font-size: 13px;">{{ $pengajuan->tahap }}</span>
+                </div>
+                <div class="card-actions">
+                    <div class="action-buttons">
+                        @if ($pengajuan->tahap == 'VERIFIKASI_BERKAS')
+                            <a href="{{ route('pengajuan.review', ['id' => $pengajuan->id]) }}" title="Review Berkas" class="action-btn btn-view">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m0-3-3-3m0 0-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75" />
+                                </svg>
+                            </a>
+                        @elseif ($pengajuan->tahap == 'PENGAJUAN_SISTER')
+                            <a href="{{ route('pengajuan.sister', ['id' => $pengajuan->id]) }}" title="Pengajuan Sister" class="action-btn btn-upload">
+                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                                </svg>
+                            </a>
+                        @endif
+                    </div>
+                </div>
+            </div>
+            @endforeach
+            <div class="no-results" id="noResultsMobile">
+                <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
+                <div>Tidak ada data yang cocok dengan pencarian Anda</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+const searchInput = document.getElementById('searchInput');
+const tableRows = document.querySelectorAll('.data-row');
+const cardItems = document.querySelectorAll('.card-data');
+const noResults = document.getElementById('noResults');
+const noResultsMobile = document.getElementById('noResultsMobile');
+
+searchInput.addEventListener('input', function() {
+    const searchTerm = this.value.toLowerCase().trim();
+    let visibleRowCount = 0;
+    let visibleCardCount = 0;
+
+    tableRows.forEach(row => {
+        const text = row.textContent.toLowerCase();
+        if (text.includes(searchTerm)) {
+            row.classList.remove('hidden'); 
+            visibleRowCount++;
+        } else { 
+            row.classList.add('hidden'); 
+        }
+    });
+
+    cardItems.forEach(card => {
+        const name = card.dataset.name;
+        if (name.includes(searchTerm) || card.dataset.rumpun.includes(searchTerm) || card.dataset.status.includes(searchTerm)) {
+            card.classList.remove('hidden'); 
+            visibleCardCount++;
+        } else { 
+            card.classList.add('hidden'); 
+        }
+    });
+
+    if (visibleRowCount === 0) noResults.classList.add('show'); 
+    else noResults.classList.remove('show');
+    
+    if (visibleCardCount === 0) noResultsMobile.classList.add('show'); 
+    else noResultsMobile.classList.remove('show');
+});
+</script>
 
 @endsection

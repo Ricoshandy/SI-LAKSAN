@@ -26,13 +26,11 @@ class AuthController extends Controller
         } else {
             return redirect()->back()->with('error', 'Password Salah.');
         }
-        
     }
 
-
-    public function login_form(){
+       public function login_form(){
         return view('Auth.login');
-    }
+     }
 
     public function logout(Request $request){
         Auth::logout();

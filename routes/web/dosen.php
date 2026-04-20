@@ -3,6 +3,7 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\FormPengajuanController;
 use App\Http\Controllers\PengajuanController;
+
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['auth', 'dosen'])->prefix('dosen')->group(function(){
@@ -21,6 +22,7 @@ Route::middleware(['auth', 'dosen'])->prefix('dosen')->group(function(){
     Route::controller(PengajuanController::class)->group(function(){
         Route::post('pengajuan/form/{id}/submit', 'submit')->name('pengajuan.submit');
         Route::get('pengajuan/view/{id}', 'pengajuan_view')->name('pengajuan.view');
+        Route::get(uri: 'pengajuan/file/{id}/{key}', action: 'serveFile')->name(name: 'pengajuan.file');
         Route::get('pengajuan/edit/{id}', 'pengajuan_edit')->name('pengajuan.edit');
         Route::post('pengajuan/edit/{id}/submit', 'pengajuan_edit_submit')->name('pengajuan.edit.submit');
         Route::get('pengajuan/progress/{id}', 'pengajuan_progress')->name('pengajuan.progress');

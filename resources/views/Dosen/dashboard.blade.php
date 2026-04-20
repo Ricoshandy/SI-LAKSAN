@@ -204,10 +204,10 @@ body {
 </head>
 <body>
 
-  <!-- 🔘 Tombol Toggle Sidebar -->
+  <!--Tombol Toggle Sidebar -->
   <button class="toggle-btn" id="toggleSidebar">☰</button>
 
-  <!-- 🌈 Sidebar -->
+  <!-- Sidebar -->
   <div class="sidebar" id="sidebar">
     <div>
       <div class="logo">
@@ -232,7 +232,7 @@ body {
     </div>
   </div>
 
-  <!-- 🧩 Main Content -->
+  <!-- Main Content -->
   <div class="main-content" id="mainContent">
     <h1>Dashboard</h1>
 
