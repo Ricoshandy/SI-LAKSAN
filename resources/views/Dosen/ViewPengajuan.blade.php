@@ -7,14 +7,14 @@
         margin-bottom: 24px;
     }
 
-    .header h1 {
-        font-size: 24px;
-        font-weight: 700;
-        padding-bottom: 100px;
-        margin-left: 40px;
-        font-family: sans-serif;
-    }
-
+ .page-title {
+    font-size: 28px;          /* sesuaikan ukuran */
+    font-weight: 800;         /* bold */
+    margin: 0 0 4px 40px;     /* rapet, ga ada padding gede */
+    padding-bottom: 0;        /* hapus padding 100px dari h1 */
+    font-family: sans-serif;
+    line-height: 1.2;
+}
     .header > p {
         text-align: left;
         margin-left: 40px;
@@ -413,7 +413,7 @@
 </style>
 
 <div class="header">
-    <h1>View Usul Kenaikan Jabatan</h1>
+   <h1 class="page-title">View Usul Kenaikan Jabatan</h1>
     <p>Pengajuan Oleh:</p>
 
     <div class="profile-card">

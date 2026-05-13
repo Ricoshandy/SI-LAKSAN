@@ -12,7 +12,6 @@ Route::controller(AuthController::class)->prefix('auth')->group(function(){
         
         // Proses Login (POST)
         Route::post('login', 'login')->name('login');
-        Route::get('login', 'login_form');
         
     });
 

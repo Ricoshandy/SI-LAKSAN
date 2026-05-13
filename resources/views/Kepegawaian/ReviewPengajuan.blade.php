@@ -3,25 +3,27 @@
 
 <style>
     /* Header Styles */
-    .header {
-        margin-bottom: 24px;
-    }
+   .header {
+    margin-bottom: 24px;
+}
 
-    .header h1 {
-        font-size: 24px;
-        font-weight: 700;
-        padding-bottom: 100px;
-        margin-left: 40px;
-        font-family: sans-serif;
-    }
+.header h1 {
+    font-size: 28px;
+    font-weight: 3000;
+    margin: 0 0 4px 40px;
+    padding: 0;
+    line-height: 1.2;
+    font-family: sans-serif;
+    color: #1f2937;
+}
 
-    .header > p {
-        text-align: left;
-        margin-left: 40px;
-        margin-bottom: 12px;
-        font-weight: 600;
-        color: #374151;
-    }
+.header > p {
+    text-align: left;
+    margin-left: 40px;
+    margin-bottom: 12px;
+    font-weight: 600;
+    color: #374151;
+}
 
     /* Profile Card */
     .profile-card {
@@ -496,43 +498,49 @@
         <div class="file-review-item">
             <div class="file-header">
                 <span class="file-title">{{ $key->title }}</span>
-                
-                @if ($pengajuan->$column !== null)
-                    <button type="button" onclick="showModal('{{ route('kepegawaian.pengajuan.file', ['id' => $pengajuan->id, 'key' => $key->key]) }}', '{{ $key->title }}')" class="action-button btn-expand">
-                        <span>Lihat File</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>
-                    </button>
-                    
-                    <a href="{{ route('kepegawaian.pengajuan.file', ['id' => $pengajuan->id, 'key' => $key->key]) }}" target="_blank" class="action-button btn-new-tab">
-                        <span>Tab Baru</span>
-                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                        </svg>
-                    </a>
-                @else
-                    <span style="color: #dc2626; font-weight: 600; font-size: 13px;">*Berkas Belum di Upload*</span>
-                @endif
-            </div>
+             @if ($pengajuan->$column !== null)
+    <button type="button" onclick="showModal('{{ route('kepegawaian.pengajuan.file', [
+        'email' => $pengajuan->getUser->email,
+        'key'   => $key->key,
+        'file'  => basename($pengajuan->{$key->key})
+    ]) }}', '{{ $key->title }}')" class="action-button btn-expand">
+        <span>Lihat File</span>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
+            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+        </svg>
+    </button>
 
-            <div class="review-options">
-                <div class="review-option">
-                    <label for="form-{{ $key->key }}-verifikasi">Verifikasi</label>
-                    <input type="radio" name="{{ $key->key }}" id="form-{{ $key->key }}-verifikasi" value="diverifikasi" style="accent-color: blue;" required>
-                </div>
-                
-                <div class="review-option">
-                    <label for="form-{{ $key->key }}-revisi">Revisi</label>
-                    <input type="radio" name="{{ $key->key }}" id="form-{{ $key->key }}-revisi" value="revisi" style="accent-color: red;" required>
-                </div>
-                
-                <div class="review-option" style="flex: 1;">
-                    <label for="form-{{ $key->key }}-keterangan">Keterangan</label>
-                    <input type="text" name="{{ $key->key }}-keterangan" id="form-{{ $key->key }}-keterangan" placeholder="Opsional...">
-                </div>
+    <a href="{{ route('kepegawaian.pengajuan.file', [
+        'email' => $pengajuan->getUser->email,
+        'key'   => $key->key,
+        'file'  => basename($pengajuan->{$key->key})
+    ]) }}" target="_blank" class="action-button btn-new-tab">
+        <span>Tab Baru</span>
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+        </svg>
+    </a>
+@else
+    <span style="color: #dc2626; font-weight: 600; font-size: 13px;">*Berkas Belum di Upload*</span>
+@endif
             </div>
+<div class="review-options">
+    <div class="review-option">
+        <label for="form-{{ $key->key }}-approve">Verifikasi</label>
+        <input type="radio" name="{{ $key->key }}" id="form-{{ $key->key }}-approve" value="approve" style="accent-color: blue;" required>
+    </div>
+    
+    <div class="review-option">
+        <label for="form-{{ $key->key }}-revisi">Revisi</label>
+        <input type="radio" name="{{ $key->key }}" id="form-{{ $key->key }}-revisi" value="revisi" style="accent-color: red;" required>
+    </div>
+    
+    <div class="review-option" style="flex: 1;">
+        <label for="form-{{ $key->key }}-keterangan">Keterangan</label>
+        <input type="text" name="{{ $key->key }}-keterangan" id="form-{{ $key->key }}-keterangan" placeholder="Opsional...">
+    </div>
+</div>
         </div>
     @endforeach
 
@@ -541,6 +549,7 @@
             Submit Review Berkas
         </button>
     </div>
+    
 </form>
 
 <!-- Modal -->

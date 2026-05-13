@@ -13,68 +13,67 @@ class ReviewPengajuanController extends Controller
     /**
      * Display a listing of the resource.
      */
-    public function action_review(Request $request, $pengajuanId)
-    {
-        try {
-            $reviewBefore = ReviewPengajuan::where('pengajuan_id', '=', $pengajuanId)->orderBy('created_at', 'DESC')->first();
+   public function action_review(Request $request, $pengajuanId)
+{
+    try {
 
-            $pengajuan = Pengajuan::find($pengajuanId);
-            $formDetails = $pengajuan->getFormPengajuan->getFormPengajuanDetails;
+        $pengajuan   = Pengajuan::find($pengajuanId);
+        $formDetails = $pengajuan->getFormPengajuan->getFormPengajuanDetails;
+        $user        = Auth::user();
+        $approveCount = 0;
 
-            $user = Auth::user();
-            $requestCount = 0;
+$lastVersion = ReviewPengajuan::where('pengajuan_id', $pengajuanId)
+                    ->max('version') ?? 0;
+$nextVersion = $lastVersion + 1;
 
-            foreach ($formDetails as $detail) {
-                
-                $key = $detail->key;
+        foreach ($formDetails as $detail) {
+            $key    = $detail->key;
+            $status = $request->input($key, 'revisi');
 
-                if ($request->$key == 'revisi') {
-                    $isVerified = false;
-                } else {
-                    $isVerified = true;
-                    $requestCount++;
-                }
-
-                ReviewPengajuan::create([
-                    'pengajuan_id' => $pengajuanId,
-                    'verified_by' => $user->id,
-                    'key' => $key,
-                    'is_verified' => $isVerified,
-                    'keterangan' => $request->input("$key-keterangan"),
-                    'version' => empty($reviewBefore) ? 1 : $reviewBefore->version++
-                ]);
-
+            if ($status === 'approve') {
+                $approveCount++;
             }
 
-            if ($requestCount == $formDetails->count()) {
-                $pengajuan->status = 'DALAM_PROSES';
-                $pengajuan->tahap = 'SIDANG_KOMITE';
-                $keteranganProgres = 'Berkas telah diverifikasi, lanjut ke tahap berikutnya';
-                $status = 'DISETUJUI';
-            } else {
-                $pengajuan->status = 'REVISI';
-                $pengajuan->tahap = 'PERLU_DILENGKAPI';
-                $keteranganProgres = 'Berkas telah ditinjau dan perlu perbaikan';
-                $status = 'REVISI';
-            }
-
-            
-            ProgresPengajuan::create([
-                'pengajuan_id' => $pengajuanId,
-                'verified_by' => $user->id,
-                'status' => $status,
-                'tahap' => 'VERIFIKASI_BERKAS',
-                'keterangan' => $keteranganProgres,
+            ReviewPengajuan::create([
+                'pengajuan_id'  => $pengajuanId,
+                'verified_by'   => $user->id,
+                'key'           => $key,
+                'status'        => $status,
+                'reviewer_type' => 'kepegawaian',
+                'keterangan'    => $request->input("{$key}-keterangan"),
+                'version'       => $nextVersion,
             ]);
-
-            $pengajuan->save();
-
-            return redirect()->route('kepegawaian.pengajuan.list')->with('success', 'Proses Review Berasil');
-
-        } catch (\Throwable $th) {
-            return redirect()->back()->with('errors', $th);
         }
+
+        if ($approveCount == $formDetails->count()) {
+            $pengajuan->status = 'DALAM_PROSES';
+            $pengajuan->tahap  = 'SIDANG_KOMITE';
+            $keteranganProgres = 'Semua berkas diverifikasi, lanjut ke sidang komite';
+            $statusProgres     = 'DISETUJUI';
+        } else {
+            $pengajuan->status = 'REVISI';
+            $pengajuan->tahap  = 'PERLU_DILENGKAPI';
+            $keteranganProgres = 'Ada berkas yang perlu diperbaiki oleh dosen';
+            $statusProgres     = 'REVISI';
+        }
+
+        ProgresPengajuan::create([
+            'pengajuan_id' => $pengajuanId,
+            'verified_by'  => $user->id,
+            'status'       => $statusProgres,
+            'tahap'        => 'VERIFIKASI_BERKAS',
+            'keterangan'   => $keteranganProgres,
+        ]);
+
+        $pengajuan->save();
+
+        return redirect()->route('kepegawaian.pengajuan.list')
+                         ->with('success', 'Review berhasil disimpan');
+
+    } catch (\Throwable $th) {
+        return redirect()->back()->with('error', $th->getMessage());
     }
+}
 
     /**
      * Show the form for creating a new resource.

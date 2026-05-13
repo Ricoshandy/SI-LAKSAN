@@ -5,7 +5,7 @@
 <style>
     /* General Styles */
     .header {
-        margin-top: -200px;
+        margin-top: -350px;
         margin-bottom: 50px;
     }
 
@@ -248,92 +248,116 @@
         font-size: 16px;
     }
 
-    /* Card View untuk Mobile */
-    .card-view {
-        display: none;
+  /* General Styles */
+.header {
+    margin-top: -350px;
+    margin-bottom: 50px;
+}
+
+.header-left {
+    font-size: 18px;
+    font-weight: 700;
+}
+
+.header-left p {
+    color: #666;
+}
+
+/* Card View untuk Mobile */
+.card-view {
+    display: none;
+}
+
+.card-item {
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 16px;
+    padding: 16px;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);  /* sama kayak table-container */
+}
+
+.card-item.hidden {
+    display: none;
+}
+
+.card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 12px;
+    padding-bottom: 12px;
+    border-bottom: 2px solid #e5e7eb;
+}
+
+.card-dosen {
+    font-weight: 700;
+    font-size: 16px;
+    color: #1f2937;
+}
+
+.card-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 0;
+    border-bottom: 1px solid #f3f4f6;
+}
+
+.card-row:last-child {
+    border-bottom: none;
+}
+
+.card-label {
+    font-weight: 600;
+    color: #6b7280;
+    font-size: 13px;
+}
+
+/* Responsive untuk Mobile */
+@media (max-width: 768px) {
+    .header {
+        margin-top: -350px;   /* tetap sama */
+        margin-bottom: 30px;
     }
 
-    .card-item {
-        background: #ffffffc3;
-        border-radius: 12px;
-        padding: 16px;
-        margin-bottom: 16px;
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-    }
-
-    .card-item.hidden {
-        display: none;
-    }
-
-    .card-header {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        margin-bottom: 12px;
-        padding-bottom: 12px;
-        border-bottom: 2px solid #e5e7eb;
-    }
-
-    .card-dosen {
+    .header-left h1 {
+        font-size: 22px;
         font-weight: 700;
-        font-size: 16px;
-        color: #1f2937;
+        margin: 0 0 4px 0;
     }
 
-    .card-row {
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
-        padding: 8px 0;
-        border-bottom: 1px solid #f3f4f6;
-    }
-
-    .card-row:last-child {
-        border-bottom: none;
-    }
-
-    .card-label {
-        font-weight: 600;
-        color: #6b7280;
+    .header-left p {
         font-size: 13px;
+        color: #666;
+        margin: 0;
     }
 
-    /* Responsive untuk Mobile */
-    @media (max-width: 768px) {
-        .search-wrapper {
-            justify-content: stretch;
-        }
-
-        .search-container {
-            width: 100%;
-        }
-
-        .table-container {
-            background: transparent;
-            box-shadow: none;
-        }
-
-        .header-left h1 {
-            font-size: 24px;
-        }
-
-        .header-left p {
-            font-size: 14px;
-        }
-
-        .content-wrapper {
-            padding: 0 12px;
-        }
-
-        .table-scroll {
-            display: none;
-        }
-
-        .card-view {
-            display: block;
-            padding: 0;
-        }
+    .search-wrapper {
+        justify-content: stretch;
     }
+
+    .search-container {
+        width: 100%;
+    }
+
+    .table-container {
+        background: transparent;
+        box-shadow: none;
+    }
+
+    .content-wrapper {
+        padding: 0 12px;
+    }
+
+    .table-scroll {
+        display: none;
+    }
+
+    .card-view {
+        display: block;
+        padding: 0;
+    }
+}
 </style>
 
 <div class="header">
@@ -370,38 +394,38 @@
                 </thead>
 
                 <tbody id="tableBody">
-                    @forelse ($pengajuans as $i => $p)
-                    <tr class="data-row">
-                        <td>{{ $i + 1 }}</td>
-                        <td class="dosen-name">{{ $p->user->name }}</td>
-                        <td class="text-center rumpun-data">
-                            @if($p->rumpun_ilmu)
-                                <span class="badge {{ strtoupper($p->rumpun_ilmu) == 'AGAMA' ? 'badge-rumpun-agama' : 'badge-rumpun-umum' }}">
-                                    {{ strtoupper($p->rumpun_ilmu) }}
-                                </span>
-                            @else
-                                <span>-</span>
-                            @endif
-                        </td>
-                        <td class="text-center usul-data">
-                            @if($p->jenis_usulan)
-                                <span class="badge badge-usul badge-usul-{{ strtolower(str_replace(' ', '_', $p->jenis_usulan)) }}">
-                                    {{ strtoupper(str_replace('_', ' ', $p->jenis_usulan)) }}
-                                </span>
-                            @else
-                                <span>-</span>
-                            @endif
-                        </td>
-                        <td class="text-center status-data">
-                            <span class="badge badge-status badge-status-{{ strtolower(str_replace(' ', '_', $p->status)) }}">
-                                {{ strtoupper(str_replace('_', ' ', $p->status)) }}
-                            </span>
-                        </td>
-                        <td class="text-center tahap-data">{{ $p->tahap }}</td>
-                    </tr>
-                    @empty
-                    @endforelse
-                </tbody>
+    @forelse ($pengajuans as $i => $p)
+    <tr class="data-row">
+        <td>{{ $i + 1 }}</td>
+        <td class="dosen-name">{{ $p->user->name }}</td>
+        <td class="text-center rumpun-data">
+            @if($p->getFormPengajuan && $p->getFormPengajuan->rumpun)
+                <span class="badge {{ strtoupper($p->getFormPengajuan->rumpun) == 'AGAMA' ? 'badge-rumpun-agama' : 'badge-rumpun-umum' }}">
+                    {{ strtoupper($p->getFormPengajuan->rumpun) }}
+                </span>
+            @else
+                <span>-</span>
+            @endif
+        </td>
+        <td class="text-center usul-data">
+            @if($p->getFormPengajuan && $p->getFormPengajuan->usul)
+                <span class="badge badge-usul badge-usul-{{ strtolower(str_replace(' ', '_', $p->getFormPengajuan->usul)) }}">
+                    {{ strtoupper(str_replace('_', ' ', $p->getFormPengajuan->usul)) }}
+                </span>
+            @else
+                <span>-</span>
+            @endif
+        </td>
+        <td class="text-center status-data">
+            <span class="badge badge-status badge-status-{{ strtolower(str_replace(' ', '_', $p->status)) }}">
+                {{ strtoupper(str_replace('_', ' ', $p->status)) }}
+            </span>
+        </td>
+        <td class="text-center tahap-data">{{ $p->tahap }}</td>
+    </tr>
+    @empty
+    @endforelse
+</tbody>
             </table>
 
             @if($pengajuans->isEmpty())

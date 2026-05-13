@@ -2,7 +2,7 @@
 @section('main-content')
 
     <div class="header">
-        <h1>Form Usul Kenaikan Jabatan</h1>
+        <h1>Form Revisi Usul Kenaikan Jabatan</h1>
     </div>
     <div style="padding: 0 28px;">
         
@@ -32,13 +32,21 @@
                 @endphp
 
                 @php
-                $reviewPengajuan = $pengajuan->getReviewPengajuans()->where('key', '=',$key->key)->first();
+                
+                $lastVersion = $pengajuan->getReviewPengajuans()
+                        ->where('key', $key->key)
+                    ->max('version');
+
+                $reviewPengajuan = $pengajuan->getReviewPengajuans()
+                    ->where('key', $key->key)
+                    ->where('version', $lastVersion)
+                    ->first();
                 @endphp
 
-                <div class="file-upload-container" id="container-{{ $key->key }}" style="margin-bottom: 16px; {{ $pengajuan->$column !== null && (!empty($reviewPengajuan) && !$reviewPengajuan->is_verified) ? 'background-color:rgb(255, 0, 0);' : ($pengajuan->$column == null ? 'background-color:rgb(236, 252, 255);' : 'background-color:rgb(0, 191, 224);') }} border-radius: 8px; padding: 14px 14px;">
-                    <label for="{{ $key->key }}" style="font-weight: bold; display: block; margin-bottom: 5px;">
-                        {{ $key->title }}
-                    </label>
+                <div class="file-upload-container" id="container-{{ $key->key }}" style="margin-bottom: 16px; {{ !empty($reviewPengajuan) && $reviewPengajuan->status === 'revisi' ? 'background-color:rgb(248, 113, 113);' : ($pengajuan->$column == null ? 'background-color:rgb(236, 252, 255);' : 'background-color:rgb(255, 255, 255, 0.5);') }} border-radius: 8px; padding: 14px 14px;">
+    <label for="{{ $key->key }}" style="font-weight: bold; display: block; margin-bottom: 5px;">
+        {{ $key->title }}
+    </label>
 
                     @if (!empty($key->description))
                         <p style="font-size: 14px; color: #666; margin-bottom: 5px;">

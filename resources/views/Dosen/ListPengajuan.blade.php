@@ -10,7 +10,7 @@
     .header-h1 {
         font-size: 24px;
         font-weight: 700;
-        padding-bottom: 100px;
+        padding-bottom: 8px;
         margin-left: 40px;
         font-family: sans-serif;
     }
@@ -32,9 +32,6 @@
         backdrop-filter: blur(6px);
     }
 
-    .table-scroll {
-        overflow-x: auto;
-    }
 
     /* Data Table */
     .data-table {
@@ -47,8 +44,15 @@
     .data-table thead tr {
         background: linear-gradient(to right, #3b7ee1, #80deea);
         color: hsl(0, 0%, 0%);
+         position: sticky;  
+         top: 0;           
+         z-index: 2;  
     }
-
+.table-scroll {
+    overflow-x: auto;
+    overflow-y: auto;
+    max-height: 500px; /* sesuaikan tingginya */
+}
     .data-table th {
         padding: 14px 12px;
         text-align: left;
@@ -306,7 +310,7 @@
 
 <div class="header">
     <h1>List Usul Kenaikan Jabatan</h1>
-    <p style="padding-bottom: 70px;">Berikut daftar seluruh pengajuan kenaikan jabatan akademik Anda</p>
+    <p style="padding-bottom: 12px;">Berikut daftar seluruh pengajuan kenaikan jabatan akademik Anda</p>
 </div>
 
 <div class="content-wrapper">

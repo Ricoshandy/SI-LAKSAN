@@ -224,7 +224,7 @@
         <path d="M0,0 Q250,100 500,0 L500,500 L0,500 Z" style="stroke: none; fill: #ffffff;"></path>
       </svg>
       <div class="footer-links">
-        <a href="#">Developer</a> | <a href="#">Contact Here</a>
+        <a href="https://ricoshandymahendra.vercel.app">Developer</a> | <a href="#">Contact Here</a>
       </div>
     </div>
 

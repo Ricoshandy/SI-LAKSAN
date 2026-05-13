@@ -10,14 +10,15 @@ class ReviewPengajuan extends Model
 {
     use HasUuids;
 
-    protected $fillable = [
-        'pengajuan_id',
-        'verified_by',
-        'key',
-        'is_verified',
-        'keterangan',
-        'version',
-    ];
+  protected $fillable = [
+    'pengajuan_id',
+    'verified_by',
+    'key',
+    'status',
+    'reviewer_type',
+    'keterangan',
+    'version',
+];
 
     public function getUser(): BelongsTo {
         return $this->belongsTo(User::class, 'verified_id', 'id');

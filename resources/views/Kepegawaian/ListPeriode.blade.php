@@ -5,7 +5,7 @@
 <style>
     /* General Styles */
     .header {
-        margin-top: -200px;
+        margin-top: 0px;
         margin-bottom: 50px;
     }
 
@@ -540,7 +540,7 @@
 
 <div class="header">
     <div class="header-left">
-        <h1>List Periode Pengajuan</h1>
+        <h1>Periode Pengajuan</h1>
         <p style="font-size: 14px;">Berikut daftar seluruh periode pengajuan kenaikan jabatan</p>
     </div>
 </div>

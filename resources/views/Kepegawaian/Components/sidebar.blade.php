@@ -23,7 +23,7 @@
       background-size: cover;
       background-repeat: no-repeat;
       background-attachment: fixed;
-      align-items: center;
+      align-items: flex-start; 
       min-height: 100vh;
       overflow-x: hidden;
       transition: all 0.3s ease;

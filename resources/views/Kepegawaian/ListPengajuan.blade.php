@@ -4,8 +4,8 @@
 <style>
     /* General Styles */
     .header {
-        margin-top:  -200px;
-        margin-bottom: 50px;
+         margin-top: 0px;
+        margin-bottom: 20px;
     }
 
     .header-left{
@@ -86,12 +86,17 @@
 
     .table-scroll {
         overflow-x: auto;
+        overflow-y: auto;
+         max-height: 500px; 
     }
 
     .data-table {
         width: 100%;
         border-collapse: collapse;
         min-width: 900px;
+        position: sticky; 
+         top: 0;           
+         z-index: 2;
     }
 
     /* Table Header */
@@ -324,7 +329,7 @@
 <div class="header">
     <div class="header-left">
         <h1>List Usul Kenaikan Jabatan</h1>
-        <p style="font-size: 14px;">Berikut daftar seluruh pengajuan kenaikan jabatan yang perlu ditinjau</p>
+        <p style="font-size: 14px;">Daftar seluruh pengajuan kenaikan jabatan yang perlu ditinjau</p>
     </div>
 </div>
 
@@ -346,6 +351,7 @@
                 <thead>
                     <tr>
                         <th>No</th>
+                        <th>ID</th> 
                         <th>Dosen</th>
                         <th>Rumpun</th>
                         <th>Usul</th>
@@ -355,44 +361,58 @@
                     </tr>
                 </thead>
 
-                <tbody id="tableBody">
-                    @foreach ($pengajuans as $i => $pengajuan)
-                    <tr class="data-row">
-                        <td>{{ $i + 1 }}</td>
-                        <td class="text-center dosen-name">{{ $pengajuan->getUser->name }}</td>
-                        <td class="text-center rumpun-data">
-                            <span class="badge {{ $pengajuan->getFormPengajuan->rumpun == 'AGAMA' ? 'badge-rumpun-agama' : 'badge-rumpun-umum' }}">
-                                {{ $pengajuan->getFormPengajuan->rumpun }}
-                            </span>
-                        </td>
-                        <td class="text-center usul-data">
-                            <span class="badge badge-usul badge-usul-{{ strtolower($pengajuan->getFormPengajuan->usul) }}">
-                                {{ $pengajuan->getFormPengajuan->usul }}
-                            </span>
-                        </td>
-                        <td class="text-center status-data">
-                            <span class="badge badge-status badge-status-{{ strtolower($pengajuan->status) }}">
-                                {{ $pengajuan->status }}
-                            </span>
-                        </td>
-                        <td class="text-center tahap-data">{{ $pengajuan->tahap }}</td>
-                        <td class="text-center">
-                            <div class="action-buttons">
-                                @if ($pengajuan->tahap == 'VERIFIKASI_BERKAS')
-                                    <a href="{{ route('pengajuan.review', ['id' => $pengajuan->id]) }}" title="Review Berkas" class="action-btn btn-view">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m0-3-3-3m0 0-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75" />
-                                        </svg>
-                                    </a>
-                                @elseif ($pengajuan->tahap == 'PENGAJUAN_SISTER')
-                                    <a href="{{ route('pengajuan.sister', ['id' => $pengajuan->id]) }}" title="Pengajuan Sister" class="action-btn btn-upload">
-                                        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                                        </svg>
-                                    </a>
-                                @endif
-                            </div>
-                        </td>
+              <tbody id="tableBody">
+    @foreach ($pengajuans as $i => $pengajuan)
+    <tr class="data-row">
+        <td>{{ $i + 1 }}</td>
+        <td class="text-center" style="font-size:11px; color:#6b7280; font-family: monospace;">{{ $pengajuan->id }}</td>
+        <td class="text-center dosen-name">{{ $pengajuan->getUser->name }}</td>
+        <td class="text-center rumpun-data">
+            <span class="badge {{ $pengajuan->getFormPengajuan->rumpun == 'AGAMA' ? 'badge-rumpun-agama' : 'badge-rumpun-umum' }}">
+                {{ $pengajuan->getFormPengajuan->rumpun }}
+            </span>
+        </td>
+        <td class="text-center usul-data">
+            <span class="badge badge-usul badge-usul-{{ strtolower($pengajuan->getFormPengajuan->usul) }}">
+                {{ $pengajuan->getFormPengajuan->usul }}
+            </span>
+        </td>
+        <td class="text-center status-data">
+            <span class="badge badge-status badge-status-{{ strtolower($pengajuan->status) }}">
+                {{ $pengajuan->status }}
+            </span>
+        </td>
+        <td class="text-center tahap-data">{{ $pengajuan->tahap }}</td>
+        <td class="text-center">
+            
+    <div class="action-buttons">
+        {{-- Tombol View — selalu muncul --}}
+        <a href="{{ route('kepegawaian.pengajuan.view', ['id' => $pengajuan->id]) }}" 
+           title="Lihat Detail Review" 
+           class="action-btn" 
+           style="background-color: #6c757d;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.641 0-8.573-3.007-9.964-7.178Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+        </a>
+
+        {{-- Action conditional seperti sebelumnya --}}
+        @if ($pengajuan->tahap == 'VERIFIKASI_BERKAS')
+            <a href="{{ route('pengajuan.review', ['id' => $pengajuan->id]) }}" title="Review Berkas" class="action-btn btn-view">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m0-3-3-3m0 0-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75" />
+                </svg>
+            </a>
+        @elseif ($pengajuan->tahap == 'PENGAJUAN_SISTER')
+            <a href="{{ route('pengajuan.sister', ['id' => $pengajuan->id]) }}" title="Pengajuan Sister" class="action-btn btn-upload">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+            </a>
+        @endif
+    </div>
+</td>
                     </tr>
                     @endforeach
                 </tbody>
@@ -425,24 +445,34 @@
                     <span class="card-label">Tahap</span>
                     <span style="font-weight: 600; font-size: 13px;">{{ $pengajuan->tahap }}</span>
                 </div>
-                <div class="card-actions">
-                    <div class="action-buttons">
-                        @if ($pengajuan->tahap == 'VERIFIKASI_BERKAS')
-                            <a href="{{ route('pengajuan.review', ['id' => $pengajuan->id]) }}" title="Review Berkas" class="action-btn btn-view">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m0-3-3-3m0 0-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75" />
-                                </svg>
-                            </a>
-                        @elseif ($pengajuan->tahap == 'PENGAJUAN_SISTER')
-                            <a href="{{ route('pengajuan.sister', ['id' => $pengajuan->id]) }}" title="Pengajuan Sister" class="action-btn btn-upload">
-                                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-                                </svg>
-                            </a>
-                        @endif
-                    </div>
-                </div>
-            </div>
+             <div class="card-actions">
+    <div class="action-buttons">
+        {{-- Tombol View — selalu muncul --}}
+        <a href="{{ route('kepegawaian.pengajuan.view', ['id' => $pengajuan->id]) }}" 
+           title="Lihat Detail Review" 
+           class="action-btn" 
+           style="background-color: #6c757d;">
+            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.641 0-8.573-3.007-9.964-7.178Z" />
+                <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
+            </svg>
+        </a>
+
+        @if ($pengajuan->tahap == 'VERIFIKASI_BERKAS')
+            <a href="{{ route('pengajuan.review', ['id' => $pengajuan->id]) }}" title="Review Berkas" class="action-btn btn-view">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M7.5 7.5h-.75A2.25 2.25 0 0 0 4.5 9.75v7.5a2.25 2.25 0 0 0 2.25 2.25h7.5a2.25 2.25 0 0 0 2.25-2.25v-7.5a2.25 2.25 0 0 0-2.25-2.25h-.75m0-3-3-3m0 0-3 3m3-3v11.25m6-2.25h.75a2.25 2.25 0 0 1 2.25 2.25v7.5a2.25 2.25 0 0 1-2.25 2.25h-7.5a2.25 2.25 0 0 1-2.25-2.25v-.75" />
+                </svg>
+            </a>
+        @elseif ($pengajuan->tahap == 'PENGAJUAN_SISTER')
+            <a href="{{ route('pengajuan.sister', ['id' => $pengajuan->id]) }}" title="Pengajuan Sister" class="action-btn btn-upload">
+                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
+                </svg>
+            </a>
+        @endif
+    </div>
+</div>
             @endforeach
             <div class="no-results" id="noResultsMobile">
                 <div style="font-size: 48px; margin-bottom: 16px;">🔍</div>
