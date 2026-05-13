@@ -380,7 +380,7 @@
                                     </svg>
                                 </a>
 
-                                @if ($pengajuan->tahap == 'SK_KENAIKAN' && $pengajuan->status == 'DISETUJUI')
+                                @if ($pengajuan->tahap == 'SK_TERBIT' && $pengajuan->status == 'DISETUJUI')
                                 <a href="{{ route('sk.download', ['id_pengajuan' => $pengajuan->id]) }}" title="Download SK" class="btn-download-sk">
                                     Download SK
                                 </a>

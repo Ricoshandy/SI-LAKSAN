@@ -119,7 +119,7 @@
       margin-bottom: 30px;
     }
 
-    input[type="email"],
+    input[type="text"],
     input[type="password"] {
       width: 100%;
       padding: 12px;
@@ -234,7 +234,7 @@
         @csrf
         <h2>Silahkan Login Akun Anda</h2>
 
-        <input type="email" name="email" placeholder="NIP" required>
+        <input type="text" name="email" placeholder="NIP" required>
         <input type="password" name="password" placeholder="Password" required>
 
         <div class="terms">

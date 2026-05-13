@@ -39,7 +39,7 @@ return new class extends Migration
             $table->string('pakta_integritas_validasi_karya')->nullable();
             $table->string('sayrat_khusus')->nullable();
             $table->enum('status', ['DRAFT', 'BARU', 'DALAM_PROSES', 'DISETUJUI', 'DITOLAK', 'REVISI'])->default('DRAFT');
-            $table->enum('tahap', ['PERLU_DILENGKAPI','VERIFIKASI_BERKAS', 'SIDANG_KOMITE', 'SIDANG_SENAT', 'PENGAJUAN_SISTER', 'SK_KENAIKAN'])->default('PERLU_DILENGKAPI');
+            $table->enum('tahap', ['PERLU_DILENGKAPI','VERIFIKASI_BERKAS', 'SIDANG_KOMITE', 'SIDANG_SENAT', 'PENGAJUAN_SISTER', 'SK_KENAIKAN', 'PENERBITAN_SK', 'SK_TERBIT'])->default('PERLU_DILENGKAPI');
             $table->timestamps();
         });
     }
