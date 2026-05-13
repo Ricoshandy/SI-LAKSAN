@@ -100,7 +100,11 @@ class SidangPengajuanController extends Controller
 
         if ($sidang->status == 'LULUS') {
             $pengajuan->status = 'DALAM_PROSES';
-            $pengajuan->tahap = 'PENGAJUAN_SISTER';
+            if ($pengajuan->getFormPengajuan->usul == 'ASISTEN_AHLI' || $pengajuan->getFormPengajuan->usul == 'LEKTOR') {
+                $pengajuan->tahap = 'PENERBITAN_SK';
+            } else {
+                $pengajuan->tahap = 'PENGAJUAN_SISTER';
+            }
             $status = 'DISETUJUI';
 
         } else {

@@ -274,7 +274,7 @@ class PengajuanController extends Controller
             'keterangan' => 'Pengajuan ke Sister oleh Kepegawaian telah berhasil dan disetujui',
         ]);
         $pengajuan->status = 'DISETUJUI';
-        $pengajuan->tahap = 'SK_KENAIKAN';
+        $pengajuan->tahap = 'SK_TERBIT';
         $pengajuan->save();
 
         $file = $request->file('sk');
