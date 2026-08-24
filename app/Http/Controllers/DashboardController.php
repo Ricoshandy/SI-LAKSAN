@@ -11,10 +11,11 @@ class DashboardController extends Controller
 {
     public function dosen_dashboard() {
         $user = Auth::user();
+        $totalDosen = User::whereRole('dosen')->count();
         $dosen = User::where('role', '=', 'dosen')->count();
         $pengajuanSaya = $user->getPengajuans()->count();
         $dalamProses = $user->getPengajuans()->where('status', '=', 'DALAM_PROSES')->count();
-        return view('Dosen.dashboard', compact('dosen', 'pengajuanSaya', 'dalamProses'));
+        return view('Dosen.dashboard', compact('dosen', 'pengajuanSaya', 'dalamProses','totalDosen'));
     }
 
     public function kepegawaian_dashboard() {

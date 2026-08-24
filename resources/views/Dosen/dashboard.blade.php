@@ -239,9 +239,9 @@ body {
     @includeWhen(View::exists('Dosen.Components.alert'), 'Dosen.Components.alert')
 
     <div class="cards">
-      <div class="card"><h2>Total Dosen</h2><p>1</p></div>
-      <div class="card"><h2>Total Pengajuan Saya</h2><p>0</p></div>
-      <div class="card"><h2>Pengajuan Dalam Proses</h2><p>0</p></div>
+      <div class="card"><h2>Total Dosen</h2><p>{{ $totalDosen }}</p></div>
+      <div class="card"><h2>Total Pengajuan Saya</h2><p>{{ $pengajuanSaya }}</p></div>
+      <div class="card"><h2>Pengajuan Dalam Proses</h2><p>{{  $dalamProses }}</p></div>
     </div>
 
     <div class="statistik-container">
