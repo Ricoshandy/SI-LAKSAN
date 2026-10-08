@@ -337,7 +337,26 @@
         $formDetails = $form->getFormPengajuanDetails()->orderBy('order', 'ASC')->get();
     @endphp
 
+@if ($errors->any())
+    <div style="
+        background: #fee2e2;
+        border: 1px solid #ef4444;
+        color: #991b1b;
+        padding: 15px;
+        margin-bottom: 20px;
+        border-radius: 10px;
+    ">
+        <strong>Upload gagal!</strong>
+
+        <ul style="margin: 8px 0 0 20px;">
+            @foreach ($errors->all() as $error)
+                <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+    </div>
+@endif
     <!-- Form Upload -->
+    
     <form action="{{ route('pengajuan.submit', ['id' => $form->id]) }}" method="POST" enctype="multipart/form-data" class="upload-form">
         @csrf
         <input type="hidden" name="periode_id" value="{{ $activePeriode->id }}">
@@ -355,13 +374,14 @@
                     </p>
                 @endif
 
-                <input 
-                    type="file" 
-                    name="{{ $detail->key }}" 
-                    id="{{ $detail->key }}" 
-                    class="file-input" 
-                    data-container="container-{{ $detail->key }}"
-                >
+               <input
+             type="file"
+              name="{{ $detail->key }}"
+            id="{{ $detail->key }}"
+              class="file-input"
+                 data-container="container-{{ $detail->key }}"
+                 accept=".pdf,application/pdf"
+>
             </div>
             @endforeach
         </div>
@@ -379,20 +399,56 @@
 </div>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".file-input").forEach(input => {
-            input.addEventListener("change", function () {
-                let containerId = this.getAttribute("data-container");
-                let container = document.getElementById(containerId);
+document.addEventListener("DOMContentLoaded", function () {
+    const maximumSize = 900 * 500; // 500 kb
 
-                if (this.files.length > 0) {
-                    container.classList.add("file-selected");
-                } else {
-                    container.classList.remove("file-selected");
-                }
-            });
+    document.querySelectorAll(".file-input").forEach(input => {
+        input.addEventListener("change", function () {
+            const containerId = this.dataset.container;
+            const container = document.getElementById(containerId);
+            const file = this.files[0];
+
+            container.classList.remove("file-selected");
+
+            if (!file) {
+                return;
+            }
+
+            const isPdf =
+                file.type === "application/pdf" ||
+                file.name.toLowerCase().endsWith(".pdf");
+
+            if (!isPdf) {
+                alert(
+                    "Upload gagal!\n" +
+                    "Berkas wajib menggunakan format PDF."
+                );
+
+                this.value = "";
+                return;
+            }
+
+            if (file.size > maximumSize) {  
+                const fileSizeMb = (
+                    file.size / 500 / 500
+                ).toFixed(2);
+
+                alert(
+                    "Upload gagal!\n" +
+                    "Ukuran berkas maksimal 4MB.\n" +
+                    "Ukuran file yang dipilih: " +
+                    fileSizeMb +
+                    " KB."
+                );
+
+                this.value = "";
+                return;
+            }
+
+            container.classList.add("file-selected");
         });
     });
+});
 </script>
 
 @endsection

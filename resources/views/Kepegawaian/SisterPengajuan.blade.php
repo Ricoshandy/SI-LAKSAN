@@ -1,290 +1,127 @@
-@extends('Dosen.Components.sidebar')
+@extends('Kepegawaian.Components.sidebar')
 @section('main-content')
 
-    <div class="header">
-        <h1>View Usul Kenaikan Jabatan</h1>
-        <p style="text-align: left;">Pengajuan Oleh:</p>
+<style>
+.sister-page{width:min(1120px,calc(100% - 40px));margin:0 auto 48px;color:#172033}.page-title{margin:0;font-size:clamp(26px,3vw,36px)}.page-subtitle{margin:6px 0 22px;color:#536176}.panel{background:rgba(255,255,255,.94);border:1px solid rgba(255,255,255,.72);border-radius:18px;box-shadow:0 12px 32px rgba(9,57,104,.13)}
+.applicant{display:flex;align-items:center;justify-content:space-between;gap:20px;padding:20px 22px;margin-bottom:18px}.applicant-main{display:flex;align-items:center;gap:14px;min-width:0}.avatar{width:52px;height:52px;flex:0 0 52px;display:grid;place-items:center;border-radius:15px;color:#fff;background:linear-gradient(135deg,#2563eb,#06b6d4)}.avatar svg{width:29px}.applicant-name{margin:0 0 4px;font-size:17px;font-weight:750}.applicant-id{margin:0;color:#64748b;font-size:13px;overflow-wrap:anywhere}.tags{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}.tag{padding:7px 11px;border-radius:999px;background:#e7f7ff;color:#075985;font-size:12px;font-weight:750}
+.download{display:flex;align-items:center;gap:14px;padding:18px 20px;margin-bottom:18px}.square-icon{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border-radius:13px;background:#e8f7ff;color:#0284c7;font-size:20px}.download .square-icon{background:#fff4d6;color:#d97706}.download-info{min-width:0;flex:1}.download-info strong{display:block;overflow-wrap:anywhere}.download-info span{display:block;margin-top:3px;color:#64748b;font-size:13px}
+.btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;min-height:42px;padding:10px 16px;border:0;border-radius:10px;font:inherit;font-size:14px;font-weight:750;text-decoration:none;cursor:pointer;transition:.2s}.btn:hover{transform:translateY(-1px)}.btn-primary{color:#fff;background:linear-gradient(135deg,#2563eb,#06b6d4);box-shadow:0 7px 15px rgba(37,99,235,.22)}.btn-secondary{color:#075985;background:#eef7ff;border:1px solid #bae6fd}.btn-danger{color:#fff;background:#dc2626;box-shadow:0 7px 15px rgba(220,38,38,.18)}.btn:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.documents{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:16px;margin-bottom:18px}.document-card{padding:18px;min-width:0}.document-head{display:flex;align-items:center;gap:12px}.document-title{flex:1;min-width:0}.document-title h3{margin:0 0 4px;font-size:15px}.document-title p{margin:0;color:#64748b;font-size:12px}.document-list{display:none;max-height:280px;overflow-y:auto;margin-top:14px;padding-top:12px;border-top:1px solid #e5e7eb}.document-list.open{display:grid;gap:7px}.document-link{width:100%;padding:9px 10px;border:1px solid #dbeafe;border-radius:8px;background:#f8fbff;color:#1e3a5f;text-align:left;font:inherit;font-size:12px;cursor:pointer}.document-link:hover{background:#eaf5ff}
+.action-panel{padding:22px}.action-panel h2{margin:0 0 5px;font-size:20px}.action-panel>p{margin:0 0 18px;color:#64748b;font-size:14px}.action-grid{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:14px;align-items:end}.file-field label{display:block;margin-bottom:7px;font-weight:700}.file-field input{width:100%;padding:11px;border:1px solid #cbd5e1;border-radius:10px;background:#f8fafc;box-sizing:border-box}.file-help{margin:6px 0 0;color:#64748b;font-size:12px}.file-message{display:none;margin:8px 0 0;padding:8px 10px;border-radius:8px;font-size:13px}.file-message.error{display:block;background:#fee2e2;color:#991b1b}.file-message.success{display:block;background:#dcfce7;color:#166534}.reject-row{display:flex;justify-content:flex-end;margin-top:16px;padding-top:16px;border-top:1px solid #e5e7eb}
+.modal-overlay{position:fixed;inset:0;z-index:9999;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(15,23,42,.62);backdrop-filter:blur(3px)}.modal-dialog{position:relative;width:min(760px,100%);max-height:calc(100vh - 40px);padding:22px;overflow:auto;border-radius:16px;background:#fff;box-shadow:0 24px 70px rgba(0,0,0,.3)}.modal-dialog.small{width:min(520px,100%)}.modal-dialog h2{margin:0 44px 16px 0;font-size:20px}.modal-close{position:absolute;top:14px;right:14px;width:34px;height:34px;border:0;border-radius:50%;background:#eef2f7;font-size:20px;cursor:pointer}.preview-frame{width:100%;height:min(66vh,620px);border:1px solid #e5e7eb;border-radius:10px}.reject-textarea{width:100%;min-height:105px;padding:11px;border:1px solid #cbd5e1;border-radius:10px;box-sizing:border-box;resize:vertical}
+@media(max-width:900px){.documents{grid-template-columns:1fr}}@media(max-width:768px){.sister-page{width:100%;margin-bottom:28px}.applicant{align-items:flex-start;flex-direction:column}.tags{justify-content:flex-start}.download{align-items:flex-start;flex-wrap:wrap}.download .btn,.action-grid .btn,.reject-row .btn{width:100%}.action-grid{grid-template-columns:1fr}}
+</style>
 
-        <div style="text-align: left; box-shadow: inset 3px 2px 15px rgba(0, 0, 0, 0.2); border-radius: 15px; width: fit-content; padding: 8px;">
-            <div style="">
-                <div style="display:flex; align-items: center;">
-                    <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="black" style="width: 46px; height: 46px;">
-                        <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                    </svg>
-                    <div style="border-bottom: 1px solid black; padding: 3px">
-                        <p style="margin: 2px 0; font-weight: 600; font-size: 14px; white-space: nowrap;">{{ $pengajuan->getUser->name }}</p>
-                        <p style="margin: 2px 0; font-size: 12px; white-space: nowrap;">{{ $pengajuan->getUser->email }}</p>
-                    </div>
-                </div>
-            </div>
-            <div style="display: flex">
-                <p style="text-align: left; font-size: 12px; color: #333; background-color:rgb(136, 239, 255); border-radius: 8px; padding: 6px; font-weight: 600;">Rumpun {{ $pengajuan->getFormPengajuan->rumpun }}</p>
-                <p style="text-align: left; font-size: 12px; color: #333; background-color:rgb(190, 245, 255); border-radius: 8px; padding: 6px; font-weight: 600; margin-left: 4px;">Usulan Ke {{ $pengajuan->getFormPengajuan->usul }}</p>
-            </div>
+<main class="sister-page">
+    <h1 class="page-title">Unggah SK-Jabatan</h1>
+    <p class="page-subtitle">Periksa dokumen dan selesaikan penerbitan SK pengajuan.</p>
+
+    @if($errors->any())
+        <div class="panel" style="padding:14px 18px;margin-bottom:18px;background:#fff1f2;color:#9f1239">
+            <strong>Proses belum berhasil:</strong>
+            <ul style="margin:7px 0 0 18px">@foreach($errors->all() as $error)<li>{{ $error }}</li>@endforeach</ul>
         </div>
+    @endif
 
-    </div>
-
-
-    <div style="margin-left: 40px;">
-        <div style="
-            background-color: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            max-width: 600px;
-            margin: 20px auto;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            font-family: sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        ">
-            <!-- Icon -->
-            <div style="
-                background-color:rgb(255, 196, 0);
-                padding: 12px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            ">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M2.25 12.75V12A2.25 2.25 0 0 1 4.5 9.75h15A2.25 2.25 0 0 1 21.75 12v.75m-8.69-6.44-2.12-2.12a1.5 1.5 0 0 0-1.061-.44H4.5A2.25 2.25 0 0 0 2.25 6v12a2.25 2.25 0 0 0 2.25 2.25h15A2.25 2.25 0 0 0 21.75 18V9a2.25 2.25 0 0 0-2.25-2.25h-5.379a1.5 1.5 0 0 1-1.06-.44Z" />
-                </svg>
-
-            </div>
-
-            <!-- Nama File -->
-            <div style="flex-grow: 1;">
-                <p style="margin: 0; font-weight: 600; color: #1f2937;">Pengajuan-{{ $pengajuan->getUser->email }}.zip</p>
-                <p style="margin: 0; font-size: 14px; color: #6b7280;">Ukuran: 5.3 MB</p>
-            </div>
-
-            <!-- Tombol Download -->
-            <a href="{{ route('download.pengajuan', ['id_pengajuan' => $pengajuan->id]) }}" style="
-                background: linear-gradient(to right, #3b82f6, #06b6d4);
-                padding: 10px 16px;
-                border-radius: 8px;
-                color: white;
-                font-weight: bold;
-                font-size: 14px;
-                text-decoration: none;
-                transition: background 0.3s ease;
-            "
-            onmouseover="this.style.opacity='0.9'"
-            onmouseout="this.style.opacity='1'"
-            >
-                ⬇ Unduh
-            </a>
+    <section class="panel applicant">
+        <div class="applicant-main">
+            <div class="avatar"><svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.7" d="M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.5 20.1a7.5 7.5 0 0 1 15 0A17.9 17.9 0 0 1 12 21.75c-2.68 0-5.22-.59-7.5-1.65Z"/></svg></div>
+            <div><p class="applicant-name">{{ $pengajuan->getUser->name }}</p><p class="applicant-id">{{ $pengajuan->getUser->email }}</p></div>
         </div>
-
-    </div>
-
-    <div style="display: flex; gap: 16px; justify-content: center; flex-wrap: wrap; font-family: sans-serif; margin: 20px;">
-        <!-- Kotak 1 -->
-        <div style="background-color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06); white-space: nowrap; font-weight: 500;">
-            <div style="margin-top: 16px; background-color:rgb(245, 255, 245); border-radius: 8px; padding: 14px 14px; border: 1px solid oklch(70.7% 0.022 261.325)">
-                <div class="space-x-3" style="font-weight: bold; margin-bottom: 5px; display: flex; align-items: center;">
-                    <div>
-                        Berkas Pengajuan Dosen
-                    </div>
-                    <button class="action-button" type="button" id="accordion-button" onclick="toggleAccordionPengajuan()">
-                        <span>
-                            Expand
-                        </span>    
-                        <svg id="berkas-accordion-icon" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" style="width: 18px; height: 18px; margin-left: 6px;">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="m4.5 5.25 7.5 7.5 7.5-7.5m-15 6 7.5 7.5 7.5-7.5" />
-                        </svg>
-                    </button>
-                </div>
-            </div>
-            <div id="accordion-content" style="padding: 6px; background-color: #fff; border-radius: 8px; display: none;">
-                 <div id="accordion-container">
-                    @foreach ( $pengajuan->getFormPengajuan->getFormPengajuanDetails()->orderBy('order', 'ASC')->get() as $key )
-                        @php
-                        $column = $key->key;    
-                        @endphp
-                        <div style="margin-bottom: 6px;">
-                            <button class="action-button" onclick="show('/{{ $pengajuan->$column }}', 'Berkas {{ $key->title }}')">
-                                {{ $key->title }}
-                            </button>
-                        </div>
-                    @endforeach
-                 </div>
-            </div>
+        <div class="tags">
+            <span class="tag">Rumpun {{ $pengajuan->getFormPengajuan->rumpun }}</span>
+            <span class="tag">Usulan {{ str_replace('_',' ',$pengajuan->getFormPengajuan->usul) }}</span>
+            <span class="tag">{{ str_replace('_',' ',$pengajuan->tahap) }}</span>
         </div>
+    </section>
 
-        <!-- Kotak 2 -->
-        <div style="background-color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06); white-space: nowrap; font-weight: 500;">
-            <div style="margin-top: 16px; background-color:rgb(245, 255, 245); border-radius: 8px; padding: 14px 14px; border: 1px solid oklch(70.7% 0.022 261.325)">
-                <div class="space-x-3" style="font-weight: bold; margin-bottom: 5px; display: flex; align-items: center;">
-                    <div>
-                        Berkas Sidang Komite
-                    </div>
-                    <button class="action-button" type="button" onclick="show('/{{ $pengajuan->sidangKomiteTerakhir->berita_acara }}', 'Berkas Sidang Komite')">
-                        <span>
-                            View
-                        </span>    
-                        <svg style="margin-left: 3px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>
-                    </button>
-                </div>
+    <section class="panel download">
+        <div class="square-icon">📦</div>
+        <div class="download-info"><strong>Pengajuan-{{ $pengajuan->getUser->email }}.zip</strong><span>Paket seluruh dokumen pengajuan dan berita acara yang tersedia.</span></div>
+        <a class="btn btn-primary" href="{{ route('download.pengajuan',['id_pengajuan'=>$pengajuan->id]) }}">⬇ Unduh ZIP</a>
+    </section>
+
+    <section class="documents">
+        <article class="panel document-card">
+            <div class="document-head">
+                <div class="square-icon">📄</div>
+                <div class="document-title"><h3>Berkas Pengajuan Dosen</h3><p>Dokumen persyaratan yang diunggah</p></div>
+                <button class="btn btn-secondary" type="button" id="accordion-button" aria-expanded="false">Lihat</button>
             </div>
-        </div>
-
-        <!-- Kotak 3 -->
-        <div style="background-color: white; padding: 16px 24px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06); white-space: nowrap;font-weight: 500;">
-            <div style="margin-top: 16px; background-color:rgb(245, 255, 245); border-radius: 8px; padding: 14px 14px; border: 1px solid oklch(70.7% 0.022 261.325)">
-                <div class="space-x-3" style="font-weight: bold; margin-bottom: 5px; display: flex; align-items: center;">
-                    <div>
-                        Berkas Sidang Senat
-                    </div>
-                    <button class="action-button" type="button" onclick="show('/{{ $pengajuan->sidangKomiteTerakhir->berita_acara }}', 'Berkas Sidang Senat')">
-                        <span>
-                            View
-                        </span>    
-                        <svg style="margin-left: 3px;" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-                            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-                        </svg>
-                    </button>
-                </div>
+            <div id="accordion-content" class="document-list">
+                @php $hasDocument=false; @endphp
+                @foreach($pengajuan->getFormPengajuan->getFormPengajuanDetails()->orderBy('order','ASC')->get() as $detail)
+                    @php $column=$detail->key; @endphp
+                    @if($pengajuan->$column)
+                        @php $hasDocument=true; @endphp
+                        <button type="button" class="document-link" data-preview-url="{{ route('kepegawaian.pengajuan.file',['email'=>$pengajuan->getUser->email,'key'=>$column,'file'=>basename($pengajuan->$column)]) }}" data-preview-title="{{ $detail->title }}">{{ $detail->title }}</button>
+                    @endif
+                @endforeach
+                @if(!$hasDocument)<span>Belum ada dokumen.</span>@endif
             </div>
-        </div>
-    </div>
+        </article>
 
-    <form enctype="multipart/form-data" method="post" action="{{ route('kepegawaian.pengajuan.approved', ['id_pengajuan' => $pengajuan->id]) }}" style="margin-left: 40px; padding: 50px 0;">
-        @csrf
-        <label for="sk" style="
-            background-color: white;
-            border: 1px solid #e5e7eb;
-            border-radius: 12px;
-            padding: 20px;
-            max-width: 600px;
-            margin: 20px auto;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-            font-family: sans-serif;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 12px;
-        ">
-            <!-- Icon -->
-            <div style="
-                background-color:rgb(51, 255, 0);
-                padding: 12px;
-                border-radius: 50%;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-            ">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor" class="size-6">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5m-13.5-9L12 3m0 0 4.5 4.5M12 3v13.5" />
-                </svg>
+        <article class="panel document-card"><div class="document-head">
+            <div class="square-icon">✓</div><div class="document-title"><h3>Sidang Komite</h3><p>Berita acara hasil sidang komite</p></div>
+            @if($pengajuan->sidangKomiteTerakhir)
+                <button type="button" class="btn btn-secondary" data-preview-url="{{ url('sidang/'.$pengajuan->getUser->email.'/'.basename($pengajuan->sidangKomiteTerakhir->berita_acara)) }}" data-preview-title="Berita Acara Sidang Komite">Lihat</button>
+            @else<span class="tag" style="background:#f1f5f9;color:#64748b">Belum tersedia</span>@endif
+        </div></article>
 
+        <article class="panel document-card"><div class="document-head">
+            <div class="square-icon">✓</div><div class="document-title"><h3>Sidang Senat</h3><p>Berita acara hasil sidang senat</p></div>
+            @if($pengajuan->sidangSenatTerakhir)
+                <button type="button" class="btn btn-secondary" data-preview-url="{{ url('sidang/'.$pengajuan->getUser->email.'/'.basename($pengajuan->sidangSenatTerakhir->berita_acara)) }}" data-preview-title="Berita Acara Sidang Senat">Lihat</button>
+            @else<span class="tag" style="background:#f1f5f9;color:#64748b">Belum tersedia</span>@endif
+        </div></article>
+    </section>
 
-            </div>
-
-            <!-- Nama File -->
-            <div style="flex-grow: 1;">
-                <p style="margin: 0; font-weight: 600; color: #1f2937;">Upload SK Kenaikan Jabatan</p>
-                <input type="file" required name="sk" id="sk" class="margin: 0; font-size: 14px; color: #6b7280;">
-            </div>
-
-            <!-- Tombol Download -->
-            <button type="submit" style="
-                background: linear-gradient(to right, #3b82f6, #06b6d4);
-                padding: 10px 16px;
-                border-radius: 8px;
-                color: white;
-                font-weight: bold;
-                font-size: 14px;
-                text-decoration: none;
-                transition: background 0.3s ease;
-                cursor: pointer;
-            "
-            onmouseover="this.style.opacity='0.9'"
-            onmouseout="this.style.opacity='1'"
-            >
-                Upload
-            </button>
-        </label>
-
-    </form>
-
-    <div style="margin-left: 40px; display: flex; justify-content: center;">
-        <button onclick="document.getElementById('modalTolak').style.display='flex'" class="action-button" style="padding: 12px 16px; --btn-bg:red;">
-            Tolak Pengajuan / Pengajuan ditolak oleh SISTER
-        </button>
-    </div>
-
-
-<div id="modalTolak" style="position: fixed; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.35); z-index: 999; top: 0; left: 0; display: none; align-items: center; justify-content: center;">
-    <div style="background-color: white; border-radius: 10px; padding: 20px; max-width: 500px; width: 90%; box-shadow: 0 4px 12px rgba(0,0,0,0.2); position: relative;">
-        
-        <button onclick="this.parentElement.parentElement.style.display='none'" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 18px; font-weight: bold; cursor: pointer;">&times;</button>
-        
-        <h2 id="title" style="margin-top: 0;">Tolak Pengajuan / Pengajuan Ditolak Oleh Sister?</h2>
-        <form action="{{ route('kepegawaian.pengajuan.rejected', ['id_pengajuan' => $pengajuan->id]) }}" method="post">
+    <section class="panel action-panel">
+        <h2>Penerbitan SK Kenaikan Jabatan</h2>
+        <p>Unggah SK yang telah diterbitkan atau tolak pengajuan dengan alasan yang jelas.</p>
+        <form id="sk-form" enctype="multipart/form-data" method="POST" action="{{ route('kepegawaian.pengajuan.approved',['id_pengajuan'=>$pengajuan->id]) }}">
             @csrf
-            <p>Apakah anda yakin ingin melakukan penolakan pengajuan kenaikan jabatan ini? ( Pengajuan oleh {{ $pengajuan->getUser->name }} )</p>
-            
-            <button type="submit" style="margin-top: 20px; padding: 8px 16px; background-color:rgb(255, 0, 0); color: white; border: none; border-radius: 6px; cursor: pointer;">Tolak Pengajuan</button>
+            <div class="action-grid">
+                <div class="file-field"><label for="sk">File SK Kenaikan Jabatan</label><input type="file" required name="sk" id="sk" accept="application/pdf,.pdf"><p class="file-help">Format PDF, maksimal 1 MB.</p><p id="sk-message" class="file-message"></p></div>
+                <button id="sk-submit" type="submit" class="btn btn-primary" disabled>⬆ Upload SK</button>
+            </div>
         </form>
-    </div>
-</div>
+        <div class="reject-row"><button type="button" id="open-reject" class="btn btn-danger">Tolak Pengajuan</button></div>
+    </section>
+</main>
 
-<div id="modal" style="position: fixed; width: 100vw; height: 100vh; background-color: rgba(0, 0, 0, 0.35); z-index: 999; top: 0; left: 0; display: none; align-items: center; justify-content: center;">
-    <div style="background-color: white; border-radius: 10px; padding: 20px; max-width: 500px; width: 90%; box-shadow: 0 4px 12px rgba(0,0,0,0.2); position: relative;">
-        
-        <button onclick="this.parentElement.parentElement.style.display='none'" style="position: absolute; top: 10px; right: 10px; background: none; border: none; font-size: 18px; font-weight: bold; cursor: pointer;">&times;</button>
-        
-        <h2 id="title" style="margin-top: 0;"></h2>
-        <div>
-            <iframe id="container" src="" width="100%" height="500px" frameborder="0"></iframe>
-        </div>
-        <button onclick="this.parentElement.parentElement.style.display='none'" style="margin-top: 20px; padding: 8px 16px; background-color:rgb(0, 60, 255); color: white; border: none; border-radius: 6px; cursor: pointer;">Tutup</button>
-    </div>
-</div>
+<div id="reject-modal" class="modal-overlay"><div class="modal-dialog small">
+    <button type="button" class="modal-close" data-close="reject-modal">×</button><h2>Tolak Pengajuan?</h2>
+    <form action="{{ route('kepegawaian.pengajuan.rejected',['id_pengajuan'=>$pengajuan->id]) }}" method="POST">@csrf
+        <p>Pengajuan milik <strong>{{ $pengajuan->getUser->name }}</strong> akan ditolak. Tuliskan alasannya agar diketahui Dosen.</p>
+        <textarea class="reject-textarea" name="keterangan" maxlength="2000" required placeholder="Tuliskan alasan penolakan..."></textarea>
+        <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px"><button type="button" class="btn btn-secondary" data-close="reject-modal">Batal</button><button type="submit" class="btn btn-danger">Ya, Tolak</button></div>
+    </form>
+</div></div>
 
-<script>
-    function show(value, title){
-        document.getElementById('modal').style.display='flex';
-        let container = document.getElementById("container");
-        document.getElementById("title").innerText = "File " + title;
-        if (container.src !== window.location.origin + value) {
-            container.src = value;
-            console.log('getting src .....');
-        } else {
-            console.log('not getting src');
-        }
-    }
-</script>
+<div id="preview-modal" class="modal-overlay"><div class="modal-dialog">
+    <button type="button" class="modal-close" data-close="preview-modal">×</button><h2 id="preview-title">Preview Dokumen</h2>
+    <iframe id="preview-frame" class="preview-frame" src="about:blank" title="Preview dokumen"></iframe>
+</div></div>
 
 <script>
-    function toggleAccordionPengajuan() {
-        var content = document.getElementById("accordion-content");
-        var icon = document.getElementById("berkas-accordion-icon");
-        var container = document.getElementById("accordion-container");
-
-        if (content.style.display === "none" || content.style.display === "") {
-            content.style.display = "block";
-            icon.style.transform = "rotate(180deg)";
-        } else {
-            content.style.display = "none";
-            icon.style.transform = "rotate(0deg)";
-        }
-        
-    }
-
-    function iframeSrc(id, valueSrc) {
-        
-        
-    }
+document.addEventListener('DOMContentLoaded',()=>{
+    const accordion=document.getElementById('accordion-content'), accordionBtn=document.getElementById('accordion-button');
+    const preview=document.getElementById('preview-modal'), frame=document.getElementById('preview-frame'), previewTitle=document.getElementById('preview-title');
+    const reject=document.getElementById('reject-modal'), sk=document.getElementById('sk'), skBtn=document.getElementById('sk-submit'), message=document.getElementById('sk-message');
+    accordionBtn?.addEventListener('click',()=>{const open=accordion.classList.toggle('open');accordionBtn.textContent=open?'Tutup':'Lihat';accordionBtn.setAttribute('aria-expanded',String(open))});
+    document.querySelectorAll('[data-preview-url]').forEach(button=>button.addEventListener('click',()=>{previewTitle.textContent=button.dataset.previewTitle||'Preview Dokumen';frame.src=button.dataset.previewUrl;preview.style.display='flex'}));
+    document.getElementById('open-reject')?.addEventListener('click',()=>reject.style.display='flex');
+    document.querySelectorAll('[data-close]').forEach(button=>button.addEventListener('click',()=>closeModal(document.getElementById(button.dataset.close))));
+    document.querySelectorAll('.modal-overlay').forEach(modal=>modal.addEventListener('click',event=>{if(event.target===modal)closeModal(modal)}));
+    function closeModal(modal){if(!modal)return;modal.style.display='none';if(modal===preview)frame.src='about:blank'}
+    sk?.addEventListener('change',()=>{
+        const file=sk.files[0];skBtn.disabled=true;message.className='file-message';message.textContent='';if(!file)return;
+        const pdf=file.type==='application/pdf'||file.name.toLowerCase().endsWith('.pdf');
+        if(!pdf){message.textContent='File SK wajib berformat PDF.';message.classList.add('error');sk.value='';return}
+        if(file.size>1024*1024){message.textContent='Ukuran maksimal 1 MB. File dipilih: '+(file.size/1024/1024).toFixed(2)+' MB.';message.classList.add('error');sk.value='';return}
+        message.textContent='File siap diunggah: '+file.name;message.classList.add('success');skBtn.disabled=false;
+    });
+});
 </script>
-
 @endsection

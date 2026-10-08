@@ -1,119 +1,444 @@
 @extends('Dosen.Components.sidebar')
+
 @section('main-content')
 
-    <div class="header">
-        <h1>Form Revisi Usul Kenaikan Jabatan</h1>
-    </div>
-    <div style="padding: 0 28px;">
-        
-        @if ($errors->any())
-            <div style="background-color: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 10px;">
-                <ul>
-                    @foreach ($errors->all() as $error)
-                        <li>{{ $error }}</li>
-                    @endforeach
-                </ul>
-            </div>
-        @endif
+<div class="header">
+    <h1>Form Revisi Usul Kenaikan Jabatan</h1>
+</div>
 
-        <h1 style="text-align: left; font-size: 24px; color: #333; background-color:rgb(136, 239, 255); border-radius: 8px; padding: 10px 10px;">Rumpun: {{ $pengajuan->getFormPengajuan->rumpun }}</h1>
-        <h1 style="text-align: left; font-size: 24px; color: #333; background-color:rgb(190, 245, 255); border-radius: 8px; padding: 10px 10px;">Usulan: Ke {{ $pengajuan->getFormPengajuan->usul }}</h1>
-        <p style="text-align: left; font-size: 16px; color: #333; background-color: white; border-radius: 8px; padding: 10px 10px;">Pengajuan dapat disimpan terlebih dahulu tanpa harus melengkapi semua form</p>
+<div style="padding: 0 28px;">
 
+    {{-- Notifikasi validasi --}}
+    @if ($errors->any())
+        <div style="
+            background:#fee2e2;
+            border:1px solid #ef4444;
+            color:#991b1b;
+            padding:15px;
+            margin-bottom:20px;
+            border-radius:10px;
+        ">
+            <strong>Revisi gagal disimpan!</strong>
 
-        <form action="{{ route('pengajuan.edit.submit', ['id' => $pengajuan->id]) }}" method="POST" enctype="multipart/form-data" style="max-width: 100%; margin-top: 20px;">
-            @csrf
+            <ul style="margin:8px 0 0 20px;">
+                @foreach ($errors->all() as $error)
+                    <li>{{ $error }}</li>
+                @endforeach
+            </ul>
+        </div>
+    @endif
 
-            <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 16px; width: 100%;">
+    <h1 style="
+        text-align:left;
+        font-size:24px;
+        color:#333;
+        background-color:rgb(136, 239, 255);
+        border-radius:8px;
+        padding:10px;
+    ">
+        Rumpun: {{ $pengajuan->getFormPengajuan->rumpun }}
+    </h1>
 
-            @foreach ($pengajuan->getFormPengajuan->getFormPengajuanDetails()->orderBy('order', 'ASC')->get() as $key)
+    <h1 style="
+        text-align:left;
+        font-size:24px;
+        color:#333;
+        background-color:rgb(190, 245, 255);
+        border-radius:8px;
+        padding:10px;
+    ">
+        Usulan: Ke {{ $pengajuan->getFormPengajuan->usul }}
+    </h1>
+
+    <p style="
+        text-align:left;
+        font-size:16px;
+        color:#333;
+        background-color:white;
+        border-radius:8px;
+        padding:10px;
+    ">
+        Pengajuan dapat disimpan terlebih dahulu tanpa harus melengkapi semua form.
+        Berkas wajib berformat PDF dengan ukuran maksimal 250kb.
+    </p>
+
+    <form
+        action="{{ route('pengajuan.edit.submit', ['id' => $pengajuan->id]) }}"
+        method="POST"
+        enctype="multipart/form-data"
+        style="max-width:100%; margin-top:20px;"
+    >
+        @csrf
+
+        <div class="upload-grid" style="
+            display:grid;
+            grid-template-columns:repeat(3, minmax(0, 1fr));
+            gap:16px;
+            width:100%;
+        ">
+
+            @foreach (
+                $pengajuan->getFormPengajuan
+                    ->getFormPengajuanDetails()
+                    ->orderBy('order', 'ASC')
+                    ->get()
+                as $detail
+            )
                 @php
-                    $column = $key->key;    
+                    $column = $detail->key;
+
+                    $lastVersion = $pengajuan
+                        ->getReviewPengajuans()
+                        ->where('key', $detail->key)
+                        ->max('version');
+
+                    $reviewPengajuan = $pengajuan
+                        ->getReviewPengajuans()
+                        ->where('key', $detail->key)
+                        ->where('version', $lastVersion)
+                        ->first();
+
+                    $needsRevision =
+                        !empty($reviewPengajuan) &&
+                        $reviewPengajuan->status === 'revisi';
+
+                    $backgroundColor = $needsRevision
+                        ? 'rgb(248, 113, 113)'
+                        : (
+                            empty($pengajuan->$column)
+                                ? 'rgb(236, 252, 255)'
+                                : 'rgba(255, 255, 255, 0.5)'
+                        );
                 @endphp
 
-                @php
-                
-                $lastVersion = $pengajuan->getReviewPengajuans()
-                        ->where('key', $key->key)
-                    ->max('version');
+                <div
+                    class="file-upload-container"
+                    id="container-{{ $detail->key }}"
+                    data-default-color="{{ $backgroundColor }}"
+                    style="
+                        margin-bottom:16px;
+                        background-color:{{ $backgroundColor }};
+                        border-radius:8px;
+                        padding:14px;
+                        box-sizing:border-box;
+                        min-width:0;
+                    "
+                >
+                    <label
+                        for="{{ $detail->key }}"
+                        style="
+                            font-weight:bold;
+                            display:block;
+                            margin-bottom:5px;
+                        "
+                    >
+                        {{ $detail->title }}
+                    </label>
 
-                $reviewPengajuan = $pengajuan->getReviewPengajuans()
-                    ->where('key', $key->key)
-                    ->where('version', $lastVersion)
-                    ->first();
-                @endphp
-
-                <div class="file-upload-container" id="container-{{ $key->key }}" style="margin-bottom: 16px; {{ !empty($reviewPengajuan) && $reviewPengajuan->status === 'revisi' ? 'background-color:rgb(248, 113, 113);' : ($pengajuan->$column == null ? 'background-color:rgb(236, 252, 255);' : 'background-color:rgb(255, 255, 255, 0.5);') }} border-radius: 8px; padding: 14px 14px;">
-    <label for="{{ $key->key }}" style="font-weight: bold; display: block; margin-bottom: 5px;">
-        {{ $key->title }}
-    </label>
-
-                    @if (!empty($key->description))
-                        <p style="font-size: 14px; color: #666; margin-bottom: 5px;">
-                            {{ $key->description }}
+                    @if (!empty($detail->description))
+                        <p style="
+                            font-size:14px;
+                            color:#666;
+                            margin-bottom:5px;
+                        ">
+                            {{ $detail->description }}
                         </p>
                     @endif
 
-                    @if ( !empty($reviewPengajuan) && !$reviewPengajuan->is_verified)
-                        <p>Perlu Perbaikan : {{ $reviewPengajuan->keterangan }}</p>
-                    @endif  
+                    @if ($needsRevision)
+                        <div style="
+                            background:#fff;
+                            color:#991b1b;
+                            padding:8px;
+                            margin:8px 0;
+                            border-radius:6px;
+                        ">
+                            <strong>Perlu perbaikan:</strong>
 
-                    @if ($pengajuan->$column !== null)
-                        <iframe src="/{{$pengajuan->$column}}" frameborder="0" height="100px"></iframe>
-                        <div>
-                            <input type="checkbox" class="update-checkbox" name="" id="check{{ $key->key }}" data-target="{{ $key->key }}">
-                            <label for="check{{ $key->key }}">Update Berkas?</label>
+                            {{ $reviewPengajuan->keterangan
+                                ?: 'Silakan perbarui berkas ini.' }}
                         </div>
-                        <input type="file" name="{{ $key->key }}" id="{{ $key->key }}" class="file-input" data-container="container-{{ $key->key }}" 
-                            style="padding: 6px 0; display: none; width: 100%; font-size: 18px; color: #111827; border: 1px solid #d1d5db; border-radius: 8px; cursor: pointer; background-color: #f9fafb;">
-                    @else
-                    
-                    <input type="file" name="{{ $key->key }}" id="{{ $key->key }}" class="file-input" data-container="container-{{ $key->key }}" 
-                        style="padding: 6px 0; display: block; width: 100%; font-size: 18px; color: #111827; border: 1px solid #d1d5db; border-radius: 8px; cursor: pointer; background-color: #f9fafb;">
                     @endif
+
+                    @if (!empty($pengajuan->$column))
+                        <div style="margin:10px 0;">
+                            <iframe
+                                src="{{ route(
+                                    'dosen.pengajuan.file',
+                                    [
+                                        'id' => $pengajuan->id,
+                                        'key' => $detail->key
+                                    ]
+                                ) }}"
+                                title="{{ $detail->title }}"
+                                frameborder="0"
+                                width="100%"
+                                height="120"
+                            ></iframe>
+                        </div>
+
+                        <div style="
+                            display:flex;
+                            align-items:center;
+                            gap:7px;
+                            margin-bottom:8px;
+                        ">
+                            <input
+                                type="checkbox"
+                                class="update-checkbox"
+                                id="check-{{ $detail->key }}"
+                                data-target="{{ $detail->key }}"
+                            >
+
+                            <label for="check-{{ $detail->key }}">
+                                Update berkas?
+                            </label>
+                        </div>
+
+                        <input
+                            type="file"
+                            name="{{ $detail->key }}"
+                            id="{{ $detail->key }}"
+                            class="file-input"
+                            data-container="container-{{ $detail->key }}"
+                            accept=".pdf,application/pdf"
+                            style="
+                                padding:6px 0;
+                                display:none;
+                                width:100%;
+                                font-size:16px;
+                                color:#111827;
+                                border:1px solid #d1d5db;
+                                border-radius:8px;
+                                cursor:pointer;
+                                background-color:#f9fafb;
+                                box-sizing:border-box;
+                            "
+                        >
+                    @else
+                        <input
+                            type="file"
+                            name="{{ $detail->key }}"
+                            id="{{ $detail->key }}"
+                            class="file-input"
+                            data-container="container-{{ $detail->key }}"
+                            accept=".pdf,application/pdf"
+                            style="
+                                padding:6px 0;
+                                display:block;
+                                width:100%;
+                                font-size:16px;
+                                color:#111827;
+                                border:1px solid #d1d5db;
+                                border-radius:8px;
+                                cursor:pointer;
+                                background-color:#f9fafb;
+                                box-sizing:border-box;
+                            "
+                        >
+                    @endif
+
+                    <small style="
+                        display:block;
+                        margin-top:7px;
+                        color:#555;
+                    ">
+                        Format PDF, maksimal 250 KB.
+                    </small>
+
+                    <div
+                        class="file-error"
+                        style="
+                            display:none;
+                            color:#b91c1c;
+                            background:#fee2e2;
+                            padding:7px;
+                            margin-top:7px;
+                            border-radius:6px;
+                            font-size:13px;
+                        "
+                    ></div>
                 </div>
             @endforeach
+        </div>
 
-            </div>
+        <div style="
+            display:flex;
+            justify-content:center;
+            flex-wrap:wrap;
+            gap:16px;
+            width:100%;
+            margin-top:20px;
+        ">
+            <button
+                type="submit"
+                style="
+                    background-color:#007bff;
+                    color:white;
+                    padding:10px 15px;
+                    border:none;
+                    border-radius:4px;
+                    cursor:pointer;
+                    font-size:16px;
+                "
+            >
+                Simpan Pengajuan
+            </button>
 
-            <div style="display: flex; justify-content: space-around; width: 100%;">
+            <button
+                type="submit"
+                name="pengajuan"
+                value="true"
+                style="
+                    background-color:rgb(14, 121, 0);
+                    color:white;
+                    padding:10px 15px;
+                    border:none;
+                    border-radius:4px;
+                    cursor:pointer;
+                    font-size:16px;
+                "
+            >
+                Simpan dan Ajukan Kenaikan Jabatan
+            </button>
+        </div>
+    </form>
+</div>
 
-                <button type="submit" style="background-color: #007bff; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
-                    Simpan Pengajuan
-                </button>
+<style>
+@media (max-width: 992px) {
+    .upload-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    }
+}
 
-                <button type="submit" name="pengajuan" value="true" style="background-color:rgb(14, 121, 0); color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; font-size: 16px;">
-                    Simpan dan Ajukan Kenaikan Jabatan
-                </button>
-            </div>
-        </form>
-    </div>
-
-    
+@media (max-width: 768px) {
+    .upload-grid {
+        grid-template-columns: 1fr !important;
+    }
+}
+</style>
 
 <script>
-    document.addEventListener("DOMContentLoaded", function () {
-        document.querySelectorAll(".file-input").forEach(input => {
-            input.addEventListener("change", function () {
-                let containerId = this.getAttribute("data-container");
-                let container = document.getElementById(containerId);
+document.addEventListener("DOMContentLoaded", function () {
+    const maximumSize = 500 * 500; // 500 kb
 
-                if (this.files.length > 0) {
-                    container.style.backgroundColor = "lightgreen"; // Warna hijau jika file dipilih
-                } else {
-                    container.style.backgroundColor = "rgb(245, 255, 245)"; // Warna default
+    function restoreContainerColor(container) {
+        if (!container) {
+            return;
+        }
+
+        container.style.backgroundColor =
+            container.dataset.defaultColor || "";
+    }
+
+    document.querySelectorAll(".file-input").forEach(input => {
+        input.addEventListener("change", function () {
+            const container = document.getElementById(
+                this.dataset.container
+            );
+
+            const errorElement = container
+                ? container.querySelector(".file-error")
+                : null;
+
+            const file = this.files[0];
+
+            if (errorElement) {
+                errorElement.style.display = "none";
+                errorElement.textContent = "";
+            }
+
+            restoreContainerColor(container);
+
+            if (!file) {
+                return;
+            }
+
+            const fileName = file.name.toLowerCase();
+
+            const isPdf =
+                file.type === "application/pdf" ||
+                fileName.endsWith(".pdf");
+
+            if (!isPdf) {
+                const message =
+                    "Berkas wajib menggunakan format PDF.";
+
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.style.display = "block";
                 }
-            });
-        });
 
-        document.querySelectorAll(".update-checkbox").forEach(checkbox => {
-            checkbox.addEventListener("change", function() {
-                let fileInput = document.getElementById(this.dataset.target);
-                fileInput.style.display = this.checked ? "block" : "none";
-            });
+                alert("Upload revisi gagal!\n" + message);
+
+                this.value = "";
+                return;
+            }
+
+            if (file.size > maximumSize) {
+                const fileSizeMb = (
+                    file.size / 500 / 500
+                ).toFixed(2);
+
+                const message =
+                    "Ukuran berkas maksimal 250KB. " +
+                    "Ukuran file yang dipilih: " +
+                    fileSizeMb +
+                    " KB.";
+
+                if (errorElement) {
+                    errorElement.textContent = message;
+                    errorElement.style.display = "block";
+                }
+
+                alert("Upload revisi gagal!\n" + message);
+
+                this.value = "";
+                return;
+            }
+
+            if (container) {
+                container.style.backgroundColor = "lightgreen";
+            }
         });
-        
     });
+
+    document.querySelectorAll(".update-checkbox").forEach(checkbox => {
+        checkbox.addEventListener("change", function () {
+            const fileInput = document.getElementById(
+                this.dataset.target
+            );
+
+            if (!fileInput) {
+                return;
+            }
+
+            fileInput.style.display = this.checked
+                ? "block"
+                : "none";
+
+            if (!this.checked) {
+                fileInput.value = "";
+
+                const container = document.getElementById(
+                    fileInput.dataset.container
+                );
+
+                const errorElement = container
+                    ? container.querySelector(".file-error")
+                    : null;
+
+                if (errorElement) {
+                    errorElement.style.display = "none";
+                    errorElement.textContent = "";
+                }
+
+                restoreContainerColor(container);
+            }
+        });
+    });
+});
 </script>
 
 @endsection

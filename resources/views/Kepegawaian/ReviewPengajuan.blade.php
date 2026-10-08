@@ -1,4 +1,4 @@
-@extends('Dosen.Components.sidebar')
+@extends('Kepegawaian.Components.sidebar')
 @section('main-content')
 
 <style>
@@ -467,7 +467,7 @@
 </style>
 
 <div class="header">
-    <h1>View Usul Kenaikan Jabatan</h1>
+    <h1>Verifikasi Berkas Pengajuan</h1>
     <p>Pengajuan Oleh:</p>
 
     <div class="profile-card">

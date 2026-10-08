@@ -88,17 +88,45 @@ class PeriodeController extends Controller
             ->with('success', 'Berhasil Mengupdate Periode');
     }
 
-    public function delete($id)
-    {
-        $periode = Periode::findOrFail($id);
-        try {
-            $periode->delete();
-            return redirect()->route('kepegawaian.periode.list')
-                ->with('success', 'Periode berhasil dihapus.');
-        } catch (\Throwable $th) {
-            return redirect()->route('kepegawaian.periode.list')
-                ->withErrors(['delete_error' => 'Gagal menghapus periode: ' . $th->getMessage()])
-                ->withInput();
-        }
+  public function delete($id)
+{
+    $periode = Periode::findOrFail($id);
+
+    $hasUnfinishedSubmission = $periode->getPengajuans()
+        ->whereNotIn('status', ['DISETUJUI', 'DITOLAK'])
+        ->exists();
+
+    if ($hasUnfinishedSubmission) {
+        return redirect()
+            ->route('kepegawaian.periode.list')
+            ->with(
+                'error',
+                'Periode tidak dapat dihapus karena masih memiliki pengajuan yang belum selesai.'
+            );
     }
+
+    // Tetap menjaga riwayat pengajuan agar tidak rusak.
+    if ($periode->getPengajuans()->exists()) {
+        return redirect()
+            ->route('kepegawaian.periode.list')
+            ->with(
+                'error',
+                'Periode tidak dapat dihapus karena masih terhubung dengan riwayat pengajuan.'
+            );
+    }
+
+    try {
+        $periode->delete();
+
+        return redirect()
+            ->route('kepegawaian.periode.list')
+            ->with('success', 'Periode berhasil dihapus.');
+    } catch (\Throwable $exception) {
+        report($exception);
+
+        return redirect()
+            ->route('kepegawaian.periode.list')
+            ->with('error', 'Periode gagal dihapus. Silakan coba kembali.');
+    }
+}
 }

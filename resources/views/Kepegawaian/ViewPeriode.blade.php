@@ -4,10 +4,10 @@
 
 <style>
     /* General Styles */
-    .header {
-        margin-top: -350px;
-        margin-bottom: 50px;
-    }
+  .header {
+    margin-top: 0;      
+    margin-bottom: 50px;
+}
 
     .header-left {
         font-size: 18px;
@@ -250,7 +250,7 @@
 
   /* General Styles */
 .header {
-    margin-top: -350px;
+    margin-top: 0;     
     margin-bottom: 50px;
 }
 

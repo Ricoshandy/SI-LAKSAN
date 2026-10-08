@@ -25,6 +25,25 @@ class PengajuanController extends Controller
         $form = FormPengajuan::with('getFormPengajuanDetails')->findOrFail($id);
         $formDetails = $form->getFormPengajuanDetails;
 
+$rules = [
+    'periode_id' => ['required', 'exists:periodes,id'],
+];
+
+foreach ($formDetails as $detail) {
+    $rules[$detail->key] = [
+        'nullable',
+        'file',
+        'mimes:pdf',
+        'max:3072',
+    ];
+}
+
+$request->validate($rules, [
+    '*.mimes' => 'Berkas wajib menggunakan format PDF.',
+    '*.max' => 'Ukuran setiap berkas maksimal 3MB.',
+]);
+
+
         $uploadedFiles = [];
 
         $pengajuan = new Pengajuan();
@@ -75,7 +94,6 @@ class PengajuanController extends Controller
             'tahap' => $pengajuan->tahap,
             'keterangan' => $keterangan,
         ]);
-        
 
         return redirect()->route('dosen_dashboard')->with('success', $message);
     }
@@ -86,19 +104,32 @@ class PengajuanController extends Controller
         return view('Dosen.ViewPengajuan', compact('pengajuan'));
     }
 
-
     public function pengajuan_edit($id)
     {
         $pengajuan = Pengajuan::find($id);
         return view('Dosen.EditPengajuan', compact('pengajuan'));
     }
-
     public function pengajuan_edit_submit(Request $request, $id)
     {
         $uploadedFiles = [];
 
         $pengajuan = Pengajuan::find($id);
         $formDetails = $pengajuan->getFormPengajuan->getFormPengajuanDetails;
+$rules = [];
+
+foreach ($formDetails as $detail) {
+    $rules[$detail->key] = [
+        'nullable',
+        'file',
+        'mimes:pdf',
+        'max:3072',
+    ];
+}
+
+$request->validate($rules, [
+    '*.mimes' => 'Berkas wajib menggunakan format PDF.',
+    '*.max' => 'Ukuran setiap berkas maksimal 3 MB.',
+]);
 
         $user = $pengajuan->getUser;
 
@@ -266,6 +297,20 @@ class PengajuanController extends Controller
 
     public function kepegawaian_pengajuan_approved(Request $request, $id_pengajuan){
         $pengajuan = Pengajuan::find($id_pengajuan);
+
+    $request->validate([
+    'sk' => [
+        'required',
+        'file',
+        'mimes:pdf',
+        'max:3072',
+    ],
+], [
+    'sk.required' => 'File SK wajib diunggah.',
+    'sk.mimes' => 'File SK wajib menggunakan format PDF.',
+    'sk.max' => 'Ukuran file SK maksimal 3 MB.',
+]);
+
         ProgresPengajuan::create([
             'pengajuan_id' => $pengajuan->id,
             'verified_by' => Auth::user()->id,
