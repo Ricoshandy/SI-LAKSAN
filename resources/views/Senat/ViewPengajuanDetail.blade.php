@@ -342,6 +342,45 @@
 
     <div class="section-title">📁 Berkas & Hasil Review</div>
 
+@php
+    // Hanya review Kepegawaian yang sudah final.
+    $lastFinalKepegawaianVersion = $pengajuan->getReviewPengajuans
+        ->where('reviewer_type', 'kepegawaian')
+        ->where('is_submitted', true)
+        ->max('version');
+
+    // Ambil keputusan sidang Komite terbaru.
+    $sidangKomiteTerakhir = $pengajuan->getSidangPengajuan
+        ->where('sidang', 'KOMITE')
+        ->sortByDesc('version')
+        ->first();
+
+    $komiteLulus = $sidangKomiteTerakhir !== null
+        && $sidangKomiteTerakhir->status === 'LULUS';
+@endphp
+
+@if ($komiteLulus)
+    <div style="
+        display: flex;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 10px;
+        margin: 14px 0 20px;
+        padding: 14px 18px;
+        background: #ecfdf5;
+        border: 1px solid #a7f3d0;
+        border-radius: 10px;
+    ">
+        <span class="review-badge badge-diverifikasi">
+            ✓ Approve Komite
+        </span>
+
+        <span style="font-size: 13px; color: #065f46;">
+            Pengajuan telah dinyatakan lulus Sidang Komite Integritas.
+        </span>
+    </div>
+@endif
+
     @php
         $ordinalMap = [1=>'Pertama',2=>'Kedua',3=>'Ketiga',4=>'Keempat',5=>'Kelima'];
         $roleLabel  = ['kepegawaian'=>'Kepegawaian','komite'=>'Komite','senat'=>'Senat','sister'=>'Sister','pakptk'=>'Pakptk'];
@@ -351,16 +390,28 @@
     @foreach ($pengajuan->getFormPengajuan->getFormPengajuanDetails()->orderBy('order','ASC')->get() as $detail)
         @php
             $column  = $detail->key;
+           
+$approvedKepegawaian = $lastFinalKepegawaianVersion !== null
+    && $pengajuan->getReviewPengajuans
+        ->where('reviewer_type', 'kepegawaian')
+        ->where('is_submitted', true)
+        ->where('version', $lastFinalKepegawaianVersion)
+        ->where('key', $column)
+        ->contains('status', 'approve');
+
             $reviews = $pengajuan->getReviewPengajuans
-                        ->where('key', $column)
-                        ->sortBy('version')
-                        ->groupBy('version');
+               ->where('key', $column)
+                 ->where('is_submitted', true)
+                 ->sortBy('version')
+                  ->groupBy('version');
+
         @endphp
 
         <div class="file-review-item">
             <div class="file-header">
                 <span class="file-title">{{ $detail->title }}</span>
 
+                
                 @if ($pengajuan->$column !== null)
                     <button type="button" onclick="showModal('{{ route('senat.pengajuan.file', [
                         'id'  => $pengajuan->id,

@@ -244,10 +244,77 @@ body {
       <div class="card"><h2>Pengajuan Dalam Proses</h2><p>{{  $dalamProses }}</p></div>
     </div>
 
-    <div class="statistik-container">
-      <h2>📈 Statistik Pengajuan Per Periode</h2>
-      <canvas id="statistikChart"></canvas>
-    </div>
+   
+<div class="statistik-container">
+
+    <h2>📈 Statistik Pengajuan Per Periode</h2>
+
+    <p style="
+        margin-top: 8px;
+        font-size: 13px;
+        color: #475569;
+    ">
+        jumlah pengajuan pada setiap periode.
+    </p>
+
+    <!-- Filter tahun -->
+    <form method="GET" style="margin: 20px 0;">
+
+        <label for="filterTahun" style="
+            font-weight: 600;
+            margin-right: 8px;
+        ">
+            Pilih Tahun:
+        </label>
+
+        <select
+            name="tahun"
+            id="filterTahun"
+            onchange="this.form.submit()"
+            style="
+                padding: 9px 18px;
+                border: 1px solid #93c5fd;
+                border-radius: 10px;
+                background: white;
+                color: #0d47a1;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                outline: none;
+            "
+        >
+
+            @forelse ($daftarTahun as $tahun)
+                <option
+                    value="{{ $tahun }}"
+                    {{ (int) $tahun === (int) $tahunDipilih ? 'selected' : '' }}
+                >
+                    {{ $tahun }}
+                </option>
+            @empty
+                <option value="{{ now()->year }}">
+                    {{ now()->year }}
+                </option>
+            @endforelse
+
+        </select>
+
+    </form>
+
+    <!-- Grafik -->
+    <canvas id="statistikChart"></canvas>
+
+    <!-- Status pembaruan data -->
+    <p id="statistikLastUpdate" style="
+        margin-top: 16px;
+        color: #475569;
+        font-size: 12px;
+    ">
+        Data otomatis diperbarui setiap 30 detik.
+    </p>
+
+</div>
+
 
     @yield('main-content')
   </div>
@@ -263,32 +330,149 @@ body {
       mainContent.classList.toggle('expanded');
     });
 
-    const ctx = document.getElementById('statistikChart').getContext('2d');
-    new Chart(ctx, {
-      type: 'bar',
-      data: {
-        labels: ['Jan', 'Feb', 'Mar', 'Apr', 'Mei', 'Jun'],
+   
+const ctx = document.getElementById('statistikChart').getContext('2d');
+
+// ========================================
+// GRAFIK PENGAJUAN DOSEN DARI MYSQL
+// ========================================
+
+const statistikChart = new Chart(ctx, {
+    type: 'bar',
+
+    data: {
+        labels: @json($periodeLabels),
+
         datasets: [{
-          data: [5, 8, 3, 6, 9, 4],
-          backgroundColor: [
-            'rgba(75,192,192,0.7)',
-            'rgba(153,102,255,0.7)',
-            'rgba(255,159,64,0.7)',
-            'rgba(255,99,132,0.7)',
-            'rgba(54,162,235,0.7)',
-            'rgba(255,206,86,0.7)'
-          ],
-          borderRadius: 10,
-          borderWidth: 2
+           label: 'Total Pengajuan',
+
+            data: @json($jumlahPengajuan),
+
+            backgroundColor: [
+                'rgba(75,192,192,0.7)',
+                'rgba(153,102,255,0.7)',
+                'rgba(255,159,64,0.7)',
+                'rgba(255,99,132,0.7)',
+                'rgba(54,162,235,0.7)',
+                'rgba(255,206,86,0.7)'
+            ],
+
+            borderRadius: 10,
+            borderWidth: 2
         }]
-      },
-      options: {
+    },
+
+    options: {
         responsive: true,
-        animation: { duration: 2000, easing: 'easeOutBounce' },
-        scales: { y: { beginAtZero: true } },
-        plugins: { legend: { display: false } }
-      }
-    });
+
+        animation: {
+            duration: 1200,
+            easing: 'easeOutQuart'
+        },
+
+        scales: {
+            y: {
+                beginAtZero: true,
+
+                ticks: {
+                    stepSize: 1,
+                    precision: 0
+                }
+            }
+        },
+
+        plugins: {
+            legend: {
+                display: false
+            },
+
+            tooltip: {
+                callbacks: {
+                    label: function(context) {
+                        return 'Pengajuan Saya: ' + context.parsed.y;
+                    }
+                }
+            }
+        }
+    }
+});
+
+
+// ========================================
+// REFRESH OTOMATIS SETIAP 30 DETIK
+// ========================================
+
+let statistikSedangDiperbarui = false;
+
+async function refreshStatistikDosen() {
+
+    if (statistikSedangDiperbarui || document.hidden) {
+        return;
+    }
+
+    statistikSedangDiperbarui = true;
+
+    const statusUpdate = document.getElementById(
+        'statistikLastUpdate'
+    );
+
+    try {
+
+        // Menggunakan URL dashboard dosen saat ini.
+        // Tidak perlu menambahkan route baru.
+        const url = new URL(window.location.href);
+
+        url.searchParams.set('statistik', '1');
+        url.searchParams.set('tahun', @json($tahunDipilih));
+
+        const response = await fetch(url.toString(), {
+            method: 'GET',
+            cache: 'no-store',
+            headers: {
+                'Accept': 'application/json',
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        });
+
+        if (!response.ok) {
+            throw new Error('Gagal mengambil statistik dosen.');
+        }
+
+        const hasil = await response.json();
+
+        if (
+            !Array.isArray(hasil.labels) ||
+            !Array.isArray(hasil.jumlah)
+        ) {
+            throw new Error('Format statistik tidak sesuai.');
+        }
+
+        // Update grafik tanpa reload
+        statistikChart.data.labels = hasil.labels;
+        statistikChart.data.datasets[0].data = hasil.jumlah;
+
+        statistikChart.update();
+
+        statusUpdate.textContent =
+            'Data terakhir diperbarui pukul ' + hasil.updated_at;
+
+    } catch (error) {
+
+        console.error('Statistik Dosen:', error);
+
+        statusUpdate.textContent =
+            'Pembaruan otomatis gagal. Data terakhir tetap ditampilkan.';
+
+    } finally {
+
+        statistikSedangDiperbarui = false;
+
+    }
+}
+
+// Periksa data setiap 30 detik
+setInterval(refreshStatistikDosen, 30000);
+
   </script>
 
 </body>

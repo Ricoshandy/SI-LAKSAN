@@ -10,7 +10,8 @@ class ReviewPengajuan extends Model
 {
     use HasUuids;
 
-  protected $fillable = [
+
+protected $fillable = [
     'pengajuan_id',
     'verified_by',
     'key',
@@ -18,7 +19,13 @@ class ReviewPengajuan extends Model
     'reviewer_type',
     'keterangan',
     'version',
+    'is_submitted',
 ];
+
+protected $casts = [
+    'is_submitted' => 'boolean',
+];
+
 
     public function getUser(): BelongsTo {
         return $this->belongsTo(User::class, 'verified_id', 'id');

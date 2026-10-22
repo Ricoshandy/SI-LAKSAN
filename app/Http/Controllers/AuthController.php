@@ -18,7 +18,13 @@ class AuthController extends Controller
         $user = User::whereEmail($validated['email'])->first();
 
         if ($user == null) {
-            return redirect()->back()->with('error', 'Pengguna Tidak Ditemukan');
+          
+return back()
+    ->withErrors([
+        'email' => 'Email tidak ditemukan.'
+    ])
+    ->onlyInput('email');
+
         }
 
         if (Auth::attempt($validated)) {
@@ -34,7 +40,12 @@ class AuthController extends Controller
             };
         }
 
-        return redirect()->back()->with('error', 'Password Salah.');
+return back()
+    ->withErrors([
+        'password' => 'Password Anda salah. Silakan coba lagi.'
+    ])
+    ->onlyInput('email');
+
     }
 
     public function login_form()

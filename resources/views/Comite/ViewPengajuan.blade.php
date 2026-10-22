@@ -379,18 +379,53 @@
         $roleOrder  = ['kepegawaian','komite','senat','sister','pakptk'];
     @endphp
 
+    
+@php
+    // Ambil versi terakhir review Kepegawaian yang sudah FINAL.
+    // Draft autosave tidak dihitung.
+    $lastFinalKepegawaianVersion = $pengajuan->getReviewPengajuans
+        ->where('reviewer_type', 'kepegawaian')
+        ->where('is_submitted', true)
+        ->max('version');
+@endphp
+
+
     @foreach ($pengajuan->getFormPengajuan->getFormPengajuanDetails()->orderBy('order','ASC')->get() as $detail)
         @php
             $column  = $detail->key;
-            $reviews = $pengajuan->getReviewPengajuans
-                        ->where('key', $column)
-                        ->sortBy('version')
-                        ->groupBy('version');
+
+    $approvedKepegawaian = $lastFinalKepegawaianVersion !== null
+    && $pengajuan->getReviewPengajuans
+        ->where('reviewer_type', 'kepegawaian')
+        ->where('is_submitted', true)
+        ->where('version', $lastFinalKepegawaianVersion)
+        ->where('key', $column)
+        ->contains('status', 'approve');
+
+
+          
+        $reviews = $pengajuan->getReviewPengajuans
+            ->where('key', $column)
+            ->where('is_submitted', true)
+            ->sortBy('version')
+            ->groupBy('version');
+
         @endphp
 
         <div class="file-review-item">
             <div class="file-header">
                 <span class="file-title">{{ $detail->title }}</span>
+
+
+@if ($approvedKepegawaian)
+    <span
+        class="review-badge badge-diverifikasi"
+        title="Dokumen telah disetujui oleh Kepegawaian"
+    >
+        ✓ Approve Kepegawaian
+    </span>
+@endif
+
 
                 @if ($pengajuan->$column !== null)
                     <button type="button" onclick="showModal('{{ route('comite.pengajuan.file', [

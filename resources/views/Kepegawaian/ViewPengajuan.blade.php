@@ -381,10 +381,13 @@
 @foreach ($pengajuan->getFormPengajuan->getFormPengajuanDetails()->orderBy('order','ASC')->get() as $detail)
     @php
         $column  = $detail->key;
+       
         $reviews = $pengajuan->getReviewPengajuans
-                    ->where('key', $column)
-                    ->sortBy('version')
-                    ->groupBy('version');
+            ->where('key', $column)
+            ->where('is_submitted', true)
+            ->sortBy('version')
+            ->groupBy('version');
+
     @endphp
 
     <div class="file-review-item">

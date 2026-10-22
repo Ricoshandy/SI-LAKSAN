@@ -1,620 +1,432 @@
+
 @extends('Kepegawaian.Components.sidebar')
+
+@section('title', 'Verifikasi Berkas - SI-LAKSAN')
 @section('main-content')
+@php
+    // Controller pengajuan_review() telah mengirim $draftReviews (keyBy('key')).
+    $formDetails = $pengajuan->getFormPengajuan
+        ->getFormPengajuanDetails()
+        ->orderBy('order', 'ASC')
+        ->get();
+    $draftMap = $draftReviews ?? collect();
+@endphp
 
 <style>
-    /* Header Styles */
-   .header {
-    margin-bottom: 24px;
-}
+    .review-page, .review-page * { box-sizing: border-box; }
+    .review-page { max-width: 1200px; margin: 0 auto; padding: 6px 4px 40px; color: #1e293b; }
+    .review-page button, .review-page input, .review-page textarea { font: inherit; }
+    .review-page button { cursor: pointer; }
+    .review-page .page-title { font-size: clamp(23px, 3vw, 30px); line-height: 1.3; font-weight: 700; margin: 0 0 7px; }
+    .review-page .page-subtitle { font-size: 13px; color: #475569; margin: 0 0 18px; }
 
-.header h1 {
-    font-size: 28px;
-    font-weight: 3000;
-    margin: 0 0 4px 40px;
-    padding: 0;
-    line-height: 1.2;
-    font-family: sans-serif;
-    color: #1f2937;
-}
-
-.header > p {
-    text-align: left;
-    margin-left: 40px;
-    margin-bottom: 12px;
-    font-weight: 600;
-    color: #374151;
-}
-
-    /* Profile Card */
-    .profile-card {
-        text-align: left;
-        box-shadow: inset 3px 2px 15px rgba(0, 0, 0, 0.2);
-        border-radius: 15px;
-        width: fit-content;
-        padding: 12px;
-        margin-left: 40px;
-        background-color: white;
+    .review-page .applicant-card {
+        background: #fff; display: flex; align-items: center; gap: 14px;
+        padding: 17px 19px; border: 1px solid #e2e8f0; border-radius: 16px;
+        box-shadow: 0 6px 20px rgba(15, 23, 42, .07); margin-bottom: 22px;
     }
-
-    .profile-header {
-        display: flex;
-        align-items: center;
-        margin-bottom: 8px;
+    .review-page .applicant-avatar {
+        width: 46px; height: 46px; border-radius: 50%; display: grid; place-items: center;
+        flex-shrink: 0; color: #0b70b8; background: #e6f4ff; font-size: 25px;
     }
+    .review-page .applicant-details { min-width: 0; flex: 1; }
+    .review-page .applicant-name { font-size: 14px; font-weight: 700; overflow-wrap: anywhere; }
+    .review-page .applicant-email { font-size: 12px; color: #64748b; overflow-wrap: anywhere; }
+    .review-page .applicant-tags { display: flex; gap: 7px; flex-wrap: wrap; margin-top: 8px; }
+    .review-page .applicant-tag { padding: 5px 9px; border-radius: 7px; background: #e0f2fe; color: #0369a1; font-size: 11px; font-weight: 700; }
 
-    .profile-icon {
-        width: 46px;
-        height: 46px;
-        flex-shrink: 0;
+    .review-page .section-heading { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin: 0 0 12px; }
+    .review-page .section-heading h2 { font-size: 18px; margin: 0; font-weight: 700; }
+    .review-page .section-hint { font-size: 12px; color: #475569; }
+    .review-page .document-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 14px; }
+    .review-page .document-card {
+        min-width: 0; background: #f7fff7; border: 1px solid #d8e9d9;
+        border-radius: 14px; padding: 17px; display: flex; flex-direction: column; gap: 12px;
+        box-shadow: 0 4px 14px rgba(15, 23, 42, .05);
     }
-
-    .profile-info {
-        border-bottom: 1px solid black;
-        padding: 3px;
-        margin-left: 8px;
+    .review-page .document-top { display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+    .review-page .document-title { font-size: 14px; font-weight: 700; line-height: 1.5; overflow-wrap: anywhere; }
+    .review-page .document-badge { flex-shrink: 0; font-size: 11px; font-weight: 700; border-radius: 999px; padding: 6px 10px; }
+    .review-page .document-badge.pending { color: #64748b; background: #e2e8f0; }
+    .review-page .document-badge.approved { color: #166534; background: #dcfce7; }
+    .review-page .document-badge.revision { color: #991b1b; background: #fee2e2; }
+    .review-page .document-note { font-size: 12px; color: #475569; overflow-wrap: anywhere; white-space: pre-wrap; }
+    .review-page .document-note:empty { display: none; }
+    .review-page .missing-file { color: #b91c1c; font-size: 12px; font-weight: 600; }
+    .review-page .document-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: auto; }
+    .review-page .btn {
+        display: inline-flex; justify-content: center; align-items: center; gap: 7px;
+        padding: 10px 14px; border-radius: 9px; border: 0; font-size: 12px;
+        font-weight: 700; line-height: 1.3; text-decoration: none; transition: opacity .15s, transform .15s;
     }
+    .review-page .btn:hover { opacity: .9; transform: translateY(-1px); }
+    .review-page .btn:disabled { cursor: not-allowed; opacity: .55; transform: none; }
+    .review-page .btn-blue { color: #fff; background: #2563eb; }
+    .review-page .btn-green { color: #fff; background: #10b981; }
+    .review-page .btn-muted { color: #334155; background: #e2e8f0; }
+    .review-page .btn-red { color: #fff; background: #dc2626; }
 
-    .profile-name {
-        margin: 2px 0;
-        font-weight: 600;
-        font-size: 14px;
-        white-space: nowrap;
+    .review-page .final-panel {
+        margin-top: 20px; padding: 18px 20px; background: #fff; border: 1px solid #e2e8f0;
+        border-radius: 14px; display: flex; align-items: center; justify-content: space-between;
+        gap: 16px; box-shadow: 0 4px 14px rgba(15, 23, 42, .05);
     }
+    .review-page .final-panel strong { font-size: 14px; }
+    .review-page .final-panel p { font-size: 12px; color: #64748b; margin-top: 5px; }
+    .review-page .final-panel .btn { flex-shrink: 0; font-size: 13px; padding: 12px 18px; }
+    .review-page .review-alert { border-radius: 10px; padding: 12px 15px; margin-bottom: 15px; font-size: 13px; font-weight: 600; }
+    .review-page .review-alert.error { background: #fee2e2; color: #991b1b; }
+    .review-page .review-alert.success { background: #dcfce7; color: #166534; }
 
-    .profile-email {
-        margin: 2px 0;
-        font-size: 12px;
-        white-space: nowrap;
+    /* Popup pemeriksaan per dokumen */
+    .review-page .review-modal {
+        display: none; position: fixed; inset: 0; z-index: 2000; padding: 16px;
+        background: rgba(15, 23, 42, .7); align-items: center; justify-content: center;
     }
-
-    .profile-badges {
-        display: flex;
-        gap: 4px;
-        flex-wrap: wrap;
+    .review-page .review-modal-dialog {
+        width: min(960px, 100%); max-height: calc(100dvh - 32px);
+        background: #fff; border-radius: 16px; box-shadow: 0 24px 65px rgba(0, 0, 0, .28);
+        overflow-y: auto; padding: 20px; display: flex; flex-direction: column; gap: 13px;
     }
-
-    .badge-rumpun,
-    .badge-usulan {
-        font-size: 12px;
-        color: #333;
-        border-radius: 8px;
-        padding: 6px 10px;
-        font-weight: 600;
+    .review-page .modal-head { display: flex; align-items: start; justify-content: space-between; gap: 12px; }
+    .review-page .modal-heading { margin: 0; font-size: 18px; font-weight: 700; overflow-wrap: anywhere; }
+    .review-page .modal-subtitle { font-size: 12px; margin-top: 4px; color: #64748b; }
+    .review-page .modal-close { width: 36px; height: 36px; border: 0; background: #ef4444; color: #fff; border-radius: 50%; font-size: 22px; flex-shrink: 0; }
+    .review-page .viewer-box { background: #1f2937; border-radius: 10px; overflow: hidden; height: clamp(220px, 46vh, 480px); }
+    .review-page .viewer-box iframe { border: 0; display: block; width: 100%; height: 100%; }
+    .review-page .no-preview { height: 100%; display: flex; align-items: center; justify-content: center; color: #fff; padding: 18px; text-align: center; font-size: 13px; }
+    .review-page .viewer-tools { display: flex; justify-content: flex-end; }
+    .review-page .review-field-title { display: block; margin-bottom: 8px; font-size: 13px; font-weight: 700; }
+    .review-page .choice-row { display: flex; flex-wrap: wrap; gap: 10px; }
+    .review-page .choice { position: relative; }
+    .review-page .choice input { position: absolute; opacity: 0; pointer-events: none; }
+    .review-page .choice span {
+        display: inline-flex; padding: 10px 17px; border-radius: 9px; border: 2px solid #cbd5e1;
+        background: #f8fafc; color: #334155; font-size: 13px; font-weight: 700; cursor: pointer;
     }
+    .review-page .choice input:focus-visible + span { outline: 3px solid #93c5fd; outline-offset: 2px; }
+    .review-page .choice input[value="approve"]:checked + span { background: #dcfce7; border-color: #16a34a; color: #166534; }
+    .review-page .choice input[value="revisi"]:checked + span { background: #fee2e2; border-color: #dc2626; color: #991b1b; }
+    .review-page .choice input:disabled + span { cursor: not-allowed; opacity: .5; }
+    .review-page .review-textarea { display: block; width: 100%; min-height: 78px; resize: vertical; border-radius: 9px; padding: 11px 12px; border: 1px solid #cbd5e1; font-size: 13px; }
+    .review-page .review-textarea:focus { border-color: #3b82f6; outline: 2px solid #bfdbfe; }
+    .review-page .modal-error { font-size: 12px; color: #b91c1c; font-weight: 600; min-height: 16px; overflow-wrap: anywhere; }
+    .review-page .modal-buttons { display: flex; gap: 10px; }
+    .review-page .modal-buttons .btn { flex: 1; font-size: 13px; padding: 12px; }
+    body.review-modal-open { overflow: hidden; }
 
-    .badge-rumpun {
-        background-color: rgb(136, 239, 255);
-    }
-
-    .badge-usulan {
-        background-color: rgb(190, 245, 255);
-    }
-
-    /* Form Wrapper */
-    .form-wrapper {
-        padding: 0 20px;
-        margin-left: 40px;
-        margin-right: 40px;
-    }
-
-    /* File Review Item */
-    .file-review-item {
-        margin-top: 16px;
-        background-color: rgb(245, 255, 245);
-        border-radius: 8px;
-        padding: 14px;
-        border: 1px solid #c3d4c3;
-    }
-
-    .file-header {
-        display: flex;
-        align-items: center;
-        gap: 12px;
-        margin-bottom: 12px;
-        flex-wrap: wrap;
-    }
-
-    .file-title {
-        font-weight: 700;
-        font-size: 15px;
-        color: #1f2937;
-        flex: 1;
-        min-width: 200px;
-    }
-
-    .action-button {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        background-color: #3b82f6;
-        color: white;
-        padding: 8px 12px;
-        border: none;
-        border-radius: 6px;
-        cursor: pointer;
-        font-size: 13px;
-        font-weight: 600;
-        transition: opacity 0.2s;
-        text-decoration: none;
-    }
-
-    .action-button:hover {
-        opacity: 0.85;
-    }
-
-    .action-button svg {
-        width: 18px;
-        height: 18px;
-    }
-
-    .btn-expand {
-        background-color: #3b82f6;
-    }
-
-    .btn-new-tab {
-        background-color: #10b981;
-    }
-
-    /* Review Options */
-    .review-options {
-        display: flex;
-        gap: 10px;
-        padding: 12px;
-        background-color: white;
-        border-radius: 8px;
-        margin-top: 8px;
-        flex-wrap: wrap;
-    }
-
-    .review-option {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-        background-color: #e5e7eb;
-        border-radius: 6px;
-        padding: 8px 12px;
-    }
-
-    .review-option label {
-        cursor: pointer;
-        font-size: 14px;
-        font-weight: 500;
-    }
-
-    .review-option input[type="radio"] {
-        cursor: pointer;
-        width: 18px;
-        height: 18px;
-    }
-
-    .review-option input[type="text"] {
-        border: 1px solid #d1d5db;
-        border-radius: 5px;
-        padding: 6px 8px;
-        font-size: 14px;
-        min-width: 200px;
-    }
-
-    /* Submit Button */
-    .submit-container {
-        display: flex;
-        justify-content: center;
-        margin: 24px 0;
-    }
-
-    .btn-submit {
-        padding: 12px 32px;
-        background-color: #10b981;
-        color: white;
-        font-weight: 600;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 16px;
-        transition: all 0.2s;
-    }
-
-    .btn-submit:hover {
-        background-color: #059669;
-        transform: translateY(-1px);
-    }
-
-    /* Modal Styles */
-    .modal-overlay {
-        position: fixed;
-        width: 100vw;
-        height: 100vh;
-        background-color: rgba(0, 0, 0, 0.5);
-        z-index: 999;
-        top: 0;
-        left: 0;
-        display: none;
-        align-items: center;
-        justify-content: center;
-        padding: 20px;
-    }
-
-    .modal-content {
-        background-color: white;
-        border-radius: 12px;
-        padding: 24px;
-        max-width: 900px;
-        width: 100%;
-        max-height: 90vh;
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
-        position: relative;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .modal-close {
-        position: absolute;
-        top: 16px;
-        right: 16px;
-        background: #ef4444;
-        color: white;
-        border: none;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        font-size: 20px;
-        font-weight: bold;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: background-color 0.2s;
-    }
-
-    .modal-close:hover {
-        background-color: #dc2626;
-    }
-
-    .modal-title {
-        margin: 0 40px 16px 0;
-        font-size: 20px;
-        font-weight: 700;
-        color: #1f2937;
-    }
-
-    .modal-iframe {
-        width: 100%;
-        height: 600px;
-        border: none;
-        border-radius: 8px;
-        background-color: #f9fafb;
-    }
-
-    .modal-actions {
-        display: flex;
-        gap: 12px;
-        margin-top: 16px;
-    }
-
-    .modal-button {
-        flex: 1;
-        padding: 12px 20px;
-        border: none;
-        border-radius: 8px;
-        cursor: pointer;
-        font-size: 15px;
-        font-weight: 600;
-        transition: all 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 8px;
-    }
-
-    .btn-download {
-        background-color: #10b981;
-        color: white;
-    }
-
-    .btn-download:hover {
-        background-color: #059669;
-    }
-
-    .btn-close-modal {
-        background-color: rgb(0, 60, 255);
-        color: white;
-    }
-
-    .btn-close-modal:hover {
-        opacity: 0.9;
-    }
-
-    .modal-button svg {
-        width: 20px;
-        height: 20px;
-    }
-
-    /* Responsive Design */
-    @media (max-width: 1024px) {
-        .form-wrapper {
-            margin-left: 30px;
-            margin-right: 30px;
-        }
-    }
-
-    @media (max-width: 768px) {
-        .header > p {
-            margin-left: 20px;
-        }
-
-        .profile-card {
-            margin-left: 20px;
-            margin-right: 20px;
-            width: auto;
-        }
-
-        .profile-header {
-            flex-wrap: wrap;
-        }
-
-        .profile-info {
-            flex: 1;
-            min-width: 200px;
-        }
-
-        .profile-name,
-        .profile-email {
-            white-space: normal;
-            word-break: break-word;
-        }
-
-        .form-wrapper {
-            margin-left: 20px;
-            margin-right: 20px;
-            padding: 0 10px;
-        }
-
-        .file-header {
-            flex-direction: column;
-            align-items: flex-start;
-        }
-
-        .file-title {
-            width: 100%;
-        }
-
-        .action-button {
-            width: 100%;
-            justify-content: center;
-        }
-
-        .review-options {
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        .review-option {
-            width: 100%;
-        }
-
-        .review-option input[type="text"] {
-            width: 100%;
-            min-width: auto;
-        }
-
-        .modal-iframe {
-            height: 400px;
-        }
-    }
-
-    @media (max-width: 480px) {
-        .header > p {
-            margin-left: 16px;
-            font-size: 14px;
-        }
-
-        .profile-card {
-            margin-left: 16px;
-            margin-right: 16px;
-            padding: 10px;
-        }
-
-        .profile-icon {
-            width: 40px;
-            height: 40px;
-        }
-
-        .profile-name {
-            font-size: 13px;
-        }
-
-        .profile-email {
-            font-size: 11px;
-        }
-
-        .badge-rumpun,
-        .badge-usulan {
-            font-size: 11px;
-            padding: 5px 8px;
-        }
-
-        .form-wrapper {
-            margin-left: 16px;
-            margin-right: 16px;
-            padding: 0 5px;
-        }
-
-        .file-review-item {
-            padding: 12px;
-        }
-
-        .file-title {
-            font-size: 14px;
-        }
-
-        .action-button {
-            font-size: 12px;
-            padding: 6px 10px;
-        }
-
-        .modal-iframe {
-            height: 300px;
-        }
-
-        .modal-actions {
-            flex-direction: column;
-        }
-
-        .modal-button {
-            width: 100%;
-        }
+    @media (max-width: 760px) {
+        .review-page .document-grid { grid-template-columns: 1fr; }
+        .review-page .applicant-card { align-items: flex-start; }
+        .review-page .final-panel { align-items: stretch; flex-direction: column; }
+        .review-page .final-panel .btn { width: 100%; }
+        .review-page .review-modal { padding: 8px; }
+        .review-page .review-modal-dialog { max-height: calc(100dvh - 16px); padding: 14px; }
+        .review-page .viewer-box { height: clamp(190px, 34vh, 320px); }
+        .review-page .modal-buttons { flex-direction: column; }
     }
 </style>
 
-<div class="header">
-    <h1>Verifikasi Berkas Pengajuan</h1>
-    <p>Pengajuan Oleh:</p>
+<div class="review-page">
+    <h1 class="page-title">Verifikasi Berkas Pengajuan</h1>
+    <p class="page-subtitle">Periksa setiap dokumen melalui popup, kemudian simpan hasilnya satu per satu.</p>
 
-    <div class="profile-card">
-        <div class="profile-header">
-            <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1" stroke="black" class="profile-icon">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M17.982 18.725A7.488 7.488 0 0 0 12 15.75a7.488 7.488 0 0 0-5.982 2.975m11.963 0a9 9 0 1 0-11.963 0m11.963 0A8.966 8.966 0 0 1 12 21a8.966 8.966 0 0 1-5.982-2.275M15 9.75a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-            </svg>
-            <div class="profile-info">
-                <p class="profile-name">{{ $pengajuan->getUser->name }}</p>
-                <p class="profile-email">{{ $pengajuan->getUser->email }}</p>
+    <section class="applicant-card" aria-label="Informasi dosen">
+        <div class="applicant-avatar" aria-hidden="true">◉</div>
+        <div class="applicant-details">
+            <div class="applicant-name">{{ $pengajuan->getUser->name }}</div>
+            <div class="applicant-email">{{ $pengajuan->getUser->email }}</div>
+            <div class="applicant-tags">
+                <span class="applicant-tag">Rumpun {{ $pengajuan->getFormPengajuan->rumpun }}</span>
+                <span class="applicant-tag">Usulan ke {{ $pengajuan->getFormPengajuan->usul }}</span>
             </div>
         </div>
-        <div class="profile-badges">
-            <span class="badge-rumpun">Rumpun {{ $pengajuan->getFormPengajuan->rumpun }}</span>
-            <span class="badge-usulan">Usulan Ke {{ $pengajuan->getFormPengajuan->usul }}</span>
+    </section>
+
+    @if (session('error'))
+        <div class="review-alert error" role="alert">{{ session('error') }}</div>
+    @endif
+    @if (session('success'))
+        <div class="review-alert success" role="status">{{ session('success') }}</div>
+    @endif
+    @if ($errors->any())
+        <div class="review-alert error" role="alert">
+            <strong>Periksa kembali:</strong>
+            @foreach ($errors->all() as $error)
+                <div>{{ $error }}</div>
+            @endforeach
         </div>
+    @endif
+
+    <div class="section-heading">
+        <h2>Dokumen Persyaratan</h2>
+        <span class="section-hint">{{ $formDetails->count() }} dokumen</span>
     </div>
-</div>
 
-<form method="POST" action="{{ route('action.review', ['pengajuanId' => $pengajuan->id]) }}" class="form-wrapper">
-    @csrf
-    
-    @foreach ($pengajuan->getFormPengajuan->getFormPengajuanDetails()->orderBy('order', 'ASC')->get() as $key)
-        @php
-        $column = $key->key;    
-        @endphp
+    {{-- Form terakhir tetap mengirim input sesuai validasi action_review() yang sudah dibuat. --}}
+    <form id="finalReviewForm" method="POST" action="{{ route('action.review', ['pengajuanId' => $pengajuan->id]) }}">
+        @csrf
+        <div class="document-grid">
+            @foreach ($formDetails as $detail)
+                @php
+                    $key = $detail->key;
+                    $saved = $draftMap->get($key);
+                    $hasFile = filled($pengajuan->{$key});
+                    $fileUrl = $hasFile ? route('kepegawaian.pengajuan.file', [
+                        'email' => $pengajuan->getUser->email,
+                        'key' => $key,
+                        'file' => basename($pengajuan->{$key}),
+                    ]) : '';
+                    $savedIsApprove = $saved && $saved->status === 'approve';
+                @endphp
 
-        <div class="file-review-item">
-            <div class="file-header">
-                <span class="file-title">{{ $key->title }}</span>
-             @if ($pengajuan->$column !== null)
-    <button type="button" onclick="showModal('{{ route('kepegawaian.pengajuan.file', [
-        'email' => $pengajuan->getUser->email,
-        'key'   => $key->key,
-        'file'  => basename($pengajuan->{$key->key})
-    ]) }}', '{{ $key->title }}')" class="action-button btn-expand">
-        <span>Lihat File</span>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M2.036 12.322a1.012 1.012 0 0 1 0-.639C3.423 7.51 7.36 4.5 12 4.5c4.638 0 8.573 3.007 9.963 7.178.07.207.07.431 0 .639C20.577 16.49 16.64 19.5 12 19.5c-4.638 0-8.573-3.007-9.963-7.178Z" />
-            <path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 1 1-6 0 3 3 0 0 1 6 0Z" />
-        </svg>
-    </button>
+                <article class="document-card" data-key="{{ $key }}" data-file="{{ $fileUrl }}" data-has-file="{{ $hasFile ? '1' : '0' }}">
+                    <input type="hidden" class="final-status" name="{{ $key }}" value="{{ $saved->status ?? '' }}">
+                    <input type="hidden" class="final-note" name="{{ $key }}-keterangan" value="{{ $saved->keterangan ?? '' }}">
 
-    <a href="{{ route('kepegawaian.pengajuan.file', [
-        'email' => $pengajuan->getUser->email,
-        'key'   => $key->key,
-        'file'  => basename($pengajuan->{$key->key})
-    ]) }}" target="_blank" class="action-button btn-new-tab">
-        <span>Tab Baru</span>
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-            <path stroke-linecap="round" stroke-linejoin="round" d="M13.5 6H5.25A2.25 2.25 0 0 0 3 8.25v10.5A2.25 2.25 0 0 0 5.25 21h10.5A2.25 2.25 0 0 0 18 18.75V10.5m-10.5 6L21 3m0 0h-5.25M21 3v5.25" />
-        </svg>
-    </a>
-@else
-    <span style="color: #dc2626; font-weight: 600; font-size: 13px;">*Berkas Belum di Upload*</span>
-@endif
+                    <div class="document-top">
+                        <div class="document-title">{{ $detail->title }}</div>
+                        <span class="document-badge {{ !$saved ? 'pending' : ($savedIsApprove ? 'approved' : 'revision') }}">
+                            {{ !$saved ? 'Belum diperiksa' : ($savedIsApprove ? 'Terverifikasi' : 'Perlu revisi') }}
+                        </span>
+                    </div>
+
+                    @unless ($hasFile)
+                        <p class="missing-file">*Berkas belum di-upload*</p>
+                    @endunless
+
+                    <p class="document-note">@if ($saved && $saved->keterangan)Catatan: {{ $saved->keterangan }}@endif</p>
+
+                    <div class="document-actions">
+                        <button type="button" class="btn btn-blue js-open-review">Periksa / Verifikasi</button>
+                        @if ($hasFile)
+                            <a class="btn btn-green" href="{{ $fileUrl }}" target="_blank" rel="noopener">Tab Baru ↗</a>
+                        @endif
+                    </div>
+                </article>
+            @endforeach
+        </div>
+
+        <div class="final-panel">
+            <div>
+                <strong>Finalisasi Pemeriksaan Berkas</strong>
+                <p id="reviewProgress" aria-live="polite">Memeriksa kelengkapan hasil review...</p>
+                <p>Hasil yang disimpan per dokumen adalah draft. Klik tombol ini hanya setelah semuanya selesai.</p>
             </div>
-<div class="review-options">
-    <div class="review-option">
-        <label for="form-{{ $key->key }}-approve">Verifikasi</label>
-        <input type="radio" name="{{ $key->key }}" id="form-{{ $key->key }}-approve" value="approve" style="accent-color: blue;" required>
-    </div>
-    
-    <div class="review-option">
-        <label for="form-{{ $key->key }}-revisi">Revisi</label>
-        <input type="radio" name="{{ $key->key }}" id="form-{{ $key->key }}-revisi" value="revisi" style="accent-color: red;" required>
-    </div>
-    
-    <div class="review-option" style="flex: 1;">
-        <label for="form-{{ $key->key }}-keterangan">Keterangan</label>
-        <input type="text" name="{{ $key->key }}-keterangan" id="form-{{ $key->key }}-keterangan" placeholder="Opsional...">
+            <button type="submit" id="finalSubmitBtn" class="btn btn-green" disabled>Submit Review Berkas</button>
+        </div>
+    </form>
+
+    {{-- Satu modal untuk semua dokumen; popup tetap menggunakan PDF.js lokal dari project. --}}
+    <div id="reviewModal" class="review-modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle" aria-hidden="true">
+        <div class="review-modal-dialog">
+            <div class="modal-head">
+                <div>
+                    <h2 id="modalTitle" class="modal-heading">Verifikasi File</h2>
+                    <p class="modal-subtitle">Periksa dokumen dan simpan keputusan sebelum melanjutkan.</p>
+                </div>
+                <button type="button" class="modal-close js-close-modal" aria-label="Tutup popup">&times;</button>
+            </div>
+
+            <div class="viewer-box">
+                <iframe id="reviewFileFrame" title="Preview dokumen" src="about:blank"></iframe>
+                <div id="noFilePreview" class="no-preview" style="display:none;">Berkas belum tersedia. Pilih Ditolak (Revisi) agar dosen dapat melengkapinya.</div>
+            </div>
+            <div class="viewer-tools">
+                <a id="modalNewTab" class="btn btn-muted" href="#" target="_blank" rel="noopener">Buka file di tab baru ↗</a>
+            </div>
+
+            <form id="documentReviewForm">
+                @csrf
+                <label class="review-field-title">Hasil pemeriksaan</label>
+                <div class="choice-row">
+                    <label class="choice">
+                        <input type="radio" name="status" value="approve" id="modalApprove">
+                        <span>✓ Verifikasi</span>
+                    </label>
+                    <label class="choice">
+                        <input type="radio" name="status" value="revisi" id="modalRevision">
+                        <span>✕ Ditolak (Revisi)</span>
+                    </label>
+                </div>
+
+                <label class="review-field-title" for="modalNote" style="margin-top:13px;">Catatan</label>
+                <textarea id="modalNote" class="review-textarea" maxlength="2000" placeholder="Tuliskan alasan revisi atau catatan pemeriksaan (opsional)..."></textarea>
+                <p id="modalMessage" class="modal-error" role="status" aria-live="polite"></p>
+
+                <div class="modal-buttons">
+                    <button type="submit" id="saveDocumentBtn" class="btn btn-blue">Submit &amp; Simpan Dokumen</button>
+                    <button type="button" class="btn btn-muted js-close-modal">Tutup</button>
+                </div>
+            </form>
+        </div>
     </div>
 </div>
-        </div>
-    @endforeach
 
-    <div class="submit-container">
-        <button type="submit" class="btn-submit">
-            Submit Review Berkas
-        </button>
-    </div>
-    
-</form>
-
-<!-- Modal -->
-<div id="modal" class="modal-overlay">
-    <div class="modal-content">
-        <button onclick="closeModal()" class="modal-close">&times;</button>
-        
-        <h2 id="title" class="modal-title"></h2>
-        <iframe id="container" src="" class="modal-iframe"></iframe>
-        
-        <div class="modal-actions">
-            <button onclick="downloadFile()" class="modal-button btn-download">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
-                    <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
-                </svg>
-                Download File
-            </button>
-            <button onclick="closeModal()" class="modal-button btn-close-modal">Tutup</button>
-        </div>
-    </div>
-</div>
-
+{{-- jQuery dipakai untuk AJAX. Jika bekerja offline, sediakan versi lokal. --}}
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
 <script>
-    let currentFileUrl = '';
+$(function () {
+    const saveDraftUrl = @json(route('action.review.draft', ['pengajuanId' => $pengajuan->id]));
+    const pdfViewerUrl = @json(asset('pdfjs/web/viewer.html'));
+    const $modal = $('#reviewModal');
+    const $modalForm = $('#documentReviewForm');
+    const $cards = $('.document-card');
+    const $submitFinal = $('#finalSubmitBtn');
+    const $modalMessage = $('#modalMessage');
+    let activeCard = null;
+    let saving = false;
 
-    function showModal(value, title) {
-        document.getElementById('modal').style.display = 'flex';
-        document.getElementById("title").innerText = "File " + title;
-        
-        // Store the current file URL for download
-        currentFileUrl = value;
-        
-        // Use local PDF.js viewer
-        let container = document.getElementById("container");
-        let viewerUrl = '/pdfjs/web/viewer.html?file=' + encodeURIComponent(value);
-        
-        container.src = viewerUrl;
-        console.log('Loading PDF viewer from local...');
+    function savedCount() {
+        return $cards.filter(function () {
+            return $(this).find('.final-status').val() !== '';
+        }).length;
+    }
+
+    function updateProgress() {
+        const complete = savedCount();
+        const total = $cards.length;
+        $('#reviewProgress').text(complete + ' dari ' + total + ' dokumen sudah tersimpan.');
+        $submitFinal.prop('disabled', saving || total === 0 || complete !== total);
     }
 
     function closeModal() {
-        document.getElementById('modal').style.display = 'none';
-        // Clear iframe src when closing to stop loading
-        document.getElementById("container").src = '';
+        if (saving) return;
+        $modal.css('display', 'none').attr('aria-hidden', 'true');
+        $('#reviewFileFrame').attr('src', 'about:blank');
+        $('body').removeClass('review-modal-open');
+        activeCard = null;
     }
 
-    function downloadFile() {
-        if (currentFileUrl) {
-            // Create temporary link to download file
-            const link = document.createElement('a');
-            link.href = currentFileUrl;
-            link.download = currentFileUrl.split('/').pop();
-            link.target = '_blank';
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    }
+    $('.js-open-review').on('click', function () {
+        if (saving) return;
+        activeCard = $(this).closest('.document-card');
+        const title = activeCard.find('.document-title').text().trim();
+        const fileUrl = activeCard.attr('data-file') || '';
+        const hasFile = activeCard.attr('data-has-file') === '1';
+        const savedStatus = activeCard.find('.final-status').val();
+        const savedNote = activeCard.find('.final-note').val();
 
-    // Close modal when clicking outside
-    document.getElementById('modal').addEventListener('click', function(e) {
-        if (e.target === this) {
-            closeModal();
+        $('#modalTitle').text('Verifikasi File - ' + title);
+        $('#modalNote').val(savedNote);
+        $modalMessage.text('');
+        $modalForm.find('input[name="status"]').prop('checked', false);
+        if (savedStatus === 'approve') {
+            $('#modalApprove').prop('checked', true);
+        } else if (savedStatus === 'revisi' || savedStatus === 'ditolak') {
+            $('#modalRevision').prop('checked', true);
         }
+
+        // Dokumen yang belum diupload tidak dapat langsung diverifikasi.
+        $('#modalApprove').prop('disabled', !hasFile);
+        if (!hasFile && savedStatus === 'approve') {
+            $('#modalApprove').prop('checked', false);
+        }
+
+        $('#reviewFileFrame').toggle(hasFile);
+        $('#noFilePreview').toggle(!hasFile);
+        $('#modalNewTab').toggle(hasFile);
+
+        if (hasFile) {
+            $('#modalNewTab').attr('href', fileUrl);
+            const isPdf = /\.pdf(?:\?|$)/i.test(fileUrl);
+            $('#reviewFileFrame').attr('src', isPdf
+                ? pdfViewerUrl + '?file=' + encodeURIComponent(fileUrl)
+                : fileUrl);
+        } else {
+            $('#reviewFileFrame').attr('src', 'about:blank');
+            $('#modalNewTab').attr('href', '#');
+        }
+
+        $modal.css('display', 'flex').attr('aria-hidden', 'false');
+        $('body').addClass('review-modal-open');
+        $modal.find('.modal-close').trigger('focus');
     });
-</script>
 
+    $('.js-close-modal').on('click', closeModal);
+    $modal.on('click', function (event) {
+        if (event.target === this) closeModal();
+    });
+    $(document).on('keydown', function (event) {
+        if (event.key === 'Escape' && $modal.is(':visible')) closeModal();
+    });
+
+    $modalForm.on('submit', function (event) {
+        event.preventDefault();
+        if (saving || !activeCard) return;
+
+        const status = $modalForm.find('input[name="status"]:checked').val();
+        const note = $('#modalNote').val() || '';
+        if (!status) {
+            $modalMessage.text('Pilih Verifikasi atau Ditolak (Revisi) terlebih dahulu.');
+            return;
+        }
+        if (note.length > 2000) {
+            $modalMessage.text('Catatan maksimal 2000 karakter.');
+            return;
+        }
+
+        const $card = activeCard;
+        saving = true;
+        $('#saveDocumentBtn').prop('disabled', true).text('Menyimpan...');
+        $modalMessage.text('Sedang menyimpan keputusan dokumen...');
+        updateProgress();
+
+        $.ajax({
+            url: saveDraftUrl,
+            method: 'POST',
+            dataType: 'json',
+            data: {
+                _token: $modalForm.find('input[name="_token"]').val(),
+                key: $card.attr('data-key'),
+                status: status,
+                keterangan: note
+            }
+        }).done(function (response) {
+            if (!response || response.success !== true) {
+                $modalMessage.text(response && response.message ? response.message : 'Gagal menyimpan dokumen.');
+                return;
+            }
+
+            // Input tersembunyi ini diperlukan oleh validasi action_review() saat final Submit.
+            $card.find('.final-status').val(status);
+            $card.find('.final-note').val(note);
+            const $badge = $card.find('.document-badge');
+            $badge.removeClass('pending approved revision')
+                .addClass(status === 'approve' ? 'approved' : 'revision')
+                .text(status === 'approve' ? 'Terverifikasi' : 'Perlu revisi');
+            $card.find('.document-note').text(note ? 'Catatan: ' + note : '');
+            $modalMessage.text('✓ Berhasil tersimpan di database.');
+            setTimeout(function () {
+                if (activeCard && activeCard[0] === $card[0]) closeModal();
+            }, 600);
+        }).fail(function (xhr) {
+            const message = xhr.responseJSON && xhr.responseJSON.message
+                ? xhr.responseJSON.message
+                : 'Gagal menyimpan. Periksa koneksi atau log Laravel.';
+            $modalMessage.text('✕ ' + message);
+            console.error('AJAX saveDraft gagal:', xhr.status, xhr.responseText);
+        }).always(function () {
+            saving = false;
+            $('#saveDocumentBtn').prop('disabled', false).text('Submit & Simpan Dokumen');
+            updateProgress();
+        });
+    });
+
+    $('#finalReviewForm').on('submit', function (event) {
+        if (saving || $cards.length === 0 || savedCount() !== $cards.length) {
+            event.preventDefault();
+            alert('Semua dokumen harus berhasil disimpan sebelum finalisasi.');
+            return;
+        }
+        if (!confirm('Finalisasi seluruh review berkas? Setelah ini pengajuan akan diproses ke tahap berikutnya atau dikembalikan untuk revisi.')) {
+            event.preventDefault();
+            return;
+        }
+        $submitFinal.prop('disabled', true).text('Memproses...');
+    });
+
+    updateProgress();
+});
+</script>
 @endsection

@@ -23,9 +23,23 @@ Route::middleware(['auth', 'kepegawaian'])->prefix('kepegawaian')->group(functio
         Route::post('pengajuan/rejected/{id_pengajuan}', 'kepegawaian_pengajuan_rejected')->name('kepegawaian.pengajuan.rejected');
     });
 
-    Route::controller(ReviewPengajuanController::class)->group(function(){
-        Route::post('pengajuan/review/{pengajuanId}/action', 'action_review')->name('action.review');
+  
+        Route::controller(ReviewPengajuanController::class)->group(function () {
+
+    // Menyimpan action dokumen secara otomatis melalui AJAX
+         Route::post(
+            'pengajuan/review/{pengajuanId}/save-draft',
+             'saveDraft'
+          )->name('action.review.draft');
+
+    // Submit final seluruh hasil pemeriksaan dokumen
+          Route::post(
+              'pengajuan/review/{pengajuanId}/action',
+              'action_review'
+            )->name('action.review');
+
     });
+
 
   Route::get('pengajuan/file/{email}/{key}/{file}', [PengajuanController::class, 'getFile'])
     ->name('kepegawaian.pengajuan.file');

@@ -244,10 +244,63 @@ body {
       <div class="card"><h2>Berkas Diterima</h2><p>{{ $berkasDiterima }}</p></div>
     </div>
 
-    <div class="statistik-container">
-      <h2>📈 Statistik Pengajuan Per Periode</h2>
-      <canvas id="statistikChart"></canvas>
-    </div>
+    
+<div class="statistik-container">
+
+  <h2>📈 Statistik Pengajuan Per Periode</h2>
+
+  <!-- Filter tahun -->
+  <form method="GET" style="margin: 18px 0;">
+    <label for="filterTahun" style="font-weight: 600; margin-right: 8px;">
+      Pilih Tahun:
+    </label>
+
+    <select
+      id="filterTahun"
+      name="tahun"
+      onchange="this.form.submit()"
+      style="
+        padding: 9px 18px;
+        border: 1px solid #93c5fd;
+        border-radius: 10px;
+        background: white;
+        color: #0d47a1;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        outline: none;
+      "
+    >
+      @forelse ($daftarTahun ?? [] as $tahun)
+        <option
+          value="{{ $tahun }}"
+          {{ (int) $tahun === (int) $tahunDipilih ? 'selected' : '' }}
+        >
+          {{ $tahun }}
+        </option>
+      @empty
+        <option value="{{ now()->year }}">
+          {{ now()->year }}
+        </option>
+      @endforelse
+    </select>
+  </form>
+
+  <!-- Grafik asli tetap dipakai -->
+  <canvas id="statistikChart"></canvas>
+
+  <p
+    id="statistikLastUpdate"
+    style="
+      font-size: 12px;
+      color: #475569;
+      margin-top: 16px;
+    "
+  >
+    Data otomatis diperbarui setiap 30 detik.
+  </p>
+
+</div>
 
     @yield('main-content')
   </div>

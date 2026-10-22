@@ -87,16 +87,18 @@
                 @php
                     $column = $detail->key;
 
-                    $lastVersion = $pengajuan
-                        ->getReviewPengajuans()
-                        ->where('key', $detail->key)
-                        ->max('version');
+                       // Ambil hanya versi review yang sudah disubmit.
+                       $lastVersion = $pengajuan->getReviewPengajuans()
+                     ->where('key', $key->key)
+                     ->where('is_submitted', true)
+                      ->max('version');
 
-                    $reviewPengajuan = $pengajuan
-                        ->getReviewPengajuans()
-                        ->where('key', $detail->key)
-                        ->where('version', $lastVersion)
-                        ->first();
+                     // Ambil hasil review final untuk dokumen ini.
+                      $reviewPengajuan = $pengajuan->getReviewPengajuans()
+                      ->where('key', $key->key)
+                     ->where('version', $lastVersion)
+                     ->where('is_submitted', true)
+                      ->first();
 
                     $needsRevision =
                         !empty($reviewPengajuan) &&

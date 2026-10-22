@@ -6,11 +6,12 @@ use App\Models\FormPengajuan;
 use App\Models\Pengajuan;
 use App\Models\ProgresPengajuan;
 use App\Models\SkJabatan;
-use Auth;
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Str;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
-use Str;
+
 use ZipArchive;
 
 class PengajuanController extends Controller
@@ -194,11 +195,36 @@ $request->validate($rules, [
         return view('Kepegawaian.ListPengajuan', compact('pengajuans'));
     }
 
-    public function pengajuan_review($id)
-    {
-        $pengajuan = Pengajuan::find($id);
-        return view('Kepegawaian.ReviewPengajuan', compact('pengajuan'));
+   
+public function pengajuan_review($id)
+{
+    $pengajuan = Pengajuan::findOrFail($id);
+
+    // Cari versi draft review Kepegawaian yang belum disubmit.
+    $draftVersion = $pengajuan->getReviewPengajuans()
+        ->where('reviewer_type', 'kepegawaian')
+        ->where('is_submitted', false)
+        ->max('version');
+
+    // Siapkan koleksi draft, meskipun belum ada review tersimpan.
+    $draftReviews = collect();
+
+    // Jika ada draft, ambil action dokumen dari versi tersebut.
+    if ($draftVersion !== null) {
+        $draftReviews = $pengajuan->getReviewPengajuans()
+            ->where('reviewer_type', 'kepegawaian')
+            ->where('is_submitted', false)
+            ->where('version', $draftVersion)
+            ->get()
+            ->keyBy('key');
     }
+
+    return view(
+        'Kepegawaian.ReviewPengajuan',
+        compact('pengajuan', 'draftReviews', 'draftVersion')
+    );
+}
+
 
     public function pengajuan_sister($id)
     {
@@ -252,48 +278,228 @@ $request->validate($rules, [
         return view('Senat.ListPengajuan', compact('pengajuans'));
     }
 
-    public function download_pengajuan($id_pengajuan) {
-        $pengajuan = Pengajuan::find($id_pengajuan);
-        
-        if (!File::exists(storage_path('app/public/tmp'))) {
-            File::makeDirectory(storage_path('app/public/tmp'), 0755, true);
+    
+public function download_pengajuan($id_pengajuan)
+{
+    $pengajuan = Pengajuan::with([
+        'getUser',
+        'getFormPengajuan.getFormPengajuanDetails',
+        'sidangKomiteTerakhir',
+        'sidangSenatTerakhir',
+    ])->findOrFail($id_pengajuan);
+
+    // 1. Ambil versi review final Kepegawaian.
+    // Draft autosave tidak boleh masuk ZIP.
+    $lastVersion = $pengajuan->getReviewPengajuans()
+        ->where('reviewer_type', 'kepegawaian')
+        ->where('is_submitted', true)
+        ->max('version');
+
+    if ($lastVersion === null) {
+        return back()->with(
+            'error',
+            'Belum ada verifikasi final dari Kepegawaian.'
+        );
+    }
+
+    // 2. Ambil dokumen yang disetujui
+    // pada versi final terbaru.
+    $approvedKeys = $pengajuan->getReviewPengajuans()
+        ->where('reviewer_type', 'kepegawaian')
+        ->where('is_submitted', true)
+        ->where('version', $lastVersion)
+        ->where('status', 'approve')
+        ->pluck('key')
+        ->all();
+
+    if (empty($approvedKeys)) {
+        return back()->with(
+            'error',
+            'Tidak ada dokumen yang disetujui Kepegawaian.'
+        );
+    }
+
+    $formPengajuan = $pengajuan->getFormPengajuan;
+
+    if (!$formPengajuan) {
+        return back()->with(
+            'error',
+            'Form pengajuan tidak ditemukan.'
+        );
+    }
+
+    $formDetails = $formPengajuan
+        ->getFormPengajuanDetails()
+        ->orderBy('order', 'ASC')
+        ->get();
+
+    $filesToZip = [];
+
+    // 3. Masukkan berkas yang sudah APPROVE.
+    foreach ($formDetails as $detail) {
+        $column = $detail->key;
+
+        if (!in_array($column, $approvedKeys, true)) {
+            continue;
         }
 
-        $zipFileName = 'Pengajuans-' . $pengajuan->getUser->email . '.zip';
-        $zipFilePath = storage_path('app/public/tmp/' . $zipFileName);
-        $zip = new ZipArchive;
+        $path = $pengajuan->{$column};
 
-        if ($zip->open($zipFilePath, ZipArchive::CREATE) === TRUE) {
-            foreach ( $pengajuan->getFormPengajuan->getFormPengajuanDetails()->orderBy('order', 'ASC')->get() as $key ) {
-                $column = $key->key;
-                $path = '/'. $pengajuan->$column;
-                $fullPath = storage_path('app/private/' . $path);
-                
-                if (file_exists($fullPath)) {
-                    $filename = 'pengajuan/' . $column . '-' . basename($path);
-                    $zip->addFile($fullPath, $filename);
-                }
-            }
+        if (empty($path)) {
+            return back()->with(
+                'error',
+                'Berkas ' . $detail->title . ' belum tersedia.'
+            );
+        }
 
-            $sidangKomite = $pengajuan->sidangKomiteTerakhir;
-            $sidangSenat = $pengajuan->sidangSenatTerakhir;
-            $sidangKomitePath = storage_path('app/private/' . $sidangKomite->berita_acara);
-            $sidangSenatePath = storage_path('app/private/' . $sidangSenat->berita_acara);
+        $fullPath = storage_path(
+            'app/private/' . ltrim($path, '/\\')
+        );
 
-            if ($sidangKomite && file_exists($sidangKomitePath)) {
-                $zip->addFile($sidangKomitePath, 'sidang/komite-' . basename($sidangKomite->berita_acara));
-            }
-            if ($sidangSenat && file_exists($sidangSenatePath)) {
-                $zip->addFile($sidangSenatePath, 'sidang/senat-' . basename($sidangSenat->berita_acara));
-            }
-            
+        if (!is_file($fullPath)) {
+            return back()->with(
+                'error',
+                'File ' . $detail->title . ' tidak ditemukan.'
+            );
+        }
+
+        $filesToZip[] = [
+            'source' => $fullPath,
+            'destination' =>
+                '01_Approve_Kepegawaian/' .
+                $column . '-' . basename($path),
+        ];
+    }
+
+    if (empty($filesToZip)) {
+        return back()->with(
+            'error',
+            'Tidak ada file yang bisa diunduh.'
+        );
+    }
+
+    // 4. Ambil Berita Acara Komite,
+    // hanya jika hasil sidang terakhir LULUS.
+    $sidangKomite = $pengajuan->sidangKomiteTerakhir;
+
+    if (
+        $sidangKomite &&
+        $sidangKomite->status === 'LULUS'
+    ) {
+        $pathKomite = $sidangKomite->berita_acara;
+
+        $fullPathKomite = $pathKomite
+            ? storage_path(
+                'app/private/' . ltrim($pathKomite, '/\\')
+            )
+            : null;
+
+        if (!$fullPathKomite || !is_file($fullPathKomite)) {
+            return back()->with(
+                'error',
+                'Berita Acara Komite tidak ditemukan.'
+            );
+        }
+
+        $filesToZip[] = [
+            'source' => $fullPathKomite,
+            'destination' =>
+                '02_Approve_Komite/Berita_Acara_Komite-' .
+                basename($pathKomite),
+        ];
+    }
+
+    // 5. Ambil Berita Acara Senat,
+    // jika hasil sidang terakhir LULUS.
+    $sidangSenat = $pengajuan->sidangSenatTerakhir;
+
+    if (
+        $sidangSenat &&
+        $sidangSenat->status === 'LULUS'
+    ) {
+        $pathSenat = $sidangSenat->berita_acara;
+
+        $fullPathSenat = $pathSenat
+            ? storage_path(
+                'app/private/' . ltrim($pathSenat, '/\\')
+            )
+            : null;
+
+        if (!$fullPathSenat || !is_file($fullPathSenat)) {
+            return back()->with(
+                'error',
+                'Berita Acara Senat tidak ditemukan.'
+            );
+        }
+
+        $filesToZip[] = [
+            'source' => $fullPathSenat,
+            'destination' =>
+                '03_Hasil_Senat/Berita_Acara_Senat-' .
+                basename($pathSenat),
+        ];
+    }
+
+    // 6. Siapkan folder ZIP sementara.
+    // Gunakan private storage agar tidak publik.
+    $tempDirectory = storage_path('app/private/tmp');
+
+    File::ensureDirectoryExists($tempDirectory);
+
+    // Nama unik agar download bersamaan tidak bentrok.
+    $zipFilePath = $tempDirectory .
+        '/Pengajuan-' . Str::uuid() . '.zip';
+
+    $zip = new ZipArchive();
+
+    $opened = $zip->open(
+        $zipFilePath,
+        ZipArchive::CREATE | ZipArchive::OVERWRITE
+    );
+
+    if ($opened !== true) {
+        return back()->with(
+            'error',
+            'Gagal membuat file ZIP.'
+        );
+    }
+
+    // 7. Masukkan file ke ZIP.
+    foreach ($filesToZip as $file) {
+        $success = $zip->addFile(
+            $file['source'],
+            $file['destination']
+        );
+
+        if (!$success) {
             $zip->close();
-    
-            return response()->download($zipFilePath)->deleteFileAfterSend(true);
-        } else {
-            return back()->with('error', 'Gagal membuat file ZIP.');
+            File::delete($zipFilePath);
+
+            return back()->with(
+                'error',
+                'Gagal menambahkan berkas ke ZIP.'
+            );
         }
     }
+
+    // 8. Selesaikan pembuatan ZIP.
+    if (!$zip->close()) {
+        File::delete($zipFilePath);
+
+        return back()->with(
+            'error',
+            'Gagal menyelesaikan file ZIP.'
+        );
+    }
+
+    // 9. Download lalu hapus ZIP sementara.
+    $downloadName = 'Pengajuan-' .
+        $pengajuan->id . '.zip';
+
+    return response()
+        ->download($zipFilePath, $downloadName)
+        ->deleteFileAfterSend(true);
+}
 
     public function kepegawaian_pengajuan_approved(Request $request, $id_pengajuan){
         $pengajuan = Pengajuan::find($id_pengajuan);
@@ -371,7 +577,12 @@ public function pengajuan_view_comite($id)
         'getProgresPengajuans.getUser',
     ])->findOrFail($id);
 
-    $lastVersion = $pengajuan->getReviewPengajuans->max('version');
+    
+$lastVersion = $pengajuan->getReviewPengajuans
+    ->where('reviewer_type', 'kepegawaian')
+    ->where('is_submitted', true)
+    ->max('version');
+
 
     $verifiedFiles = $pengajuan->getReviewPengajuans
                         ->where('version', $lastVersion)
@@ -409,7 +620,12 @@ public function comite_download_pengajuan($id)
     $zip = new ZipArchive;
 
     if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
-        $lastVersion = $pengajuan->getReviewPengajuans->max('version');
+        
+$lastVersion = $pengajuan->getReviewPengajuans
+    ->where('reviewer_type', 'kepegawaian')
+    ->where('is_submitted', true)
+    ->max('version');
+
 
         foreach ($pengajuan->getFormPengajuan->getFormPengajuanDetails()->orderBy('order', 'ASC')->get() as $detail) {
             $column = $detail->key;
@@ -444,7 +660,12 @@ public function pengajuan_view_senat($id)
         'getProgresPengajuans.getUser',
     ])->findOrFail($id);
 
-    $lastVersion = $pengajuan->getReviewPengajuans->max('version');
+    
+$lastVersion = $pengajuan->getReviewPengajuans
+    ->where('reviewer_type', 'kepegawaian')
+    ->where('is_submitted', true)
+    ->max('version');
+
     $verifiedFiles = $pengajuan->getReviewPengajuans
                         ->where('version', $lastVersion)
                         ->where('status', 'approve');
@@ -481,7 +702,12 @@ public function senat_download_pengajuan($id)
     $zip = new ZipArchive;
 
     if ($zip->open($zipFilePath, ZipArchive::CREATE | ZipArchive::OVERWRITE) === TRUE) {
-        $lastVersion = $pengajuan->getReviewPengajuans->max('version');
+        
+$lastVersion = $pengajuan->getReviewPengajuans
+    ->where('reviewer_type', 'kepegawaian')
+    ->where('is_submitted', true)
+    ->max('version');
+
 
         foreach ($pengajuan->getFormPengajuan->getFormPengajuanDetails()->orderBy('order', 'ASC')->get() as $detail) {
             $column = $detail->key;
